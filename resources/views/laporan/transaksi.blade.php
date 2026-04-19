@@ -36,6 +36,23 @@
 </div>
 
 @if ($data)
+    @if ($total_masuk > 0 || $total_keluar > 0)
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="stat-card success">
+                    <h5>📥 Total Masuk</h5>
+                    <div class="stat-value">{{ number_format($total_masuk) }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card danger">
+                    <h5>📤 Total Keluar</h5>
+                    <div class="stat-value">{{ number_format($total_keluar) }}</div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="table-responsive">
         <table class="table table-hover">
             <thead>

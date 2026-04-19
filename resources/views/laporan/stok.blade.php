@@ -5,6 +5,36 @@
 @section('content')
 <h2 class="page-title mb-4">Laporan Stok Barang</h2>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Filter Laporan</h5>
+        <form action="{{ route('inventory.laporan.stok') }}" method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="kategori_id" class="form-label">Kategori</label>
+                <select id="kategori_id" name="kategori_id" class="form-select">
+                    <option value="">-- Semua Kategori --</option>
+                    @foreach ($kategori as $kat)
+                        <option value="{{ $kat->id }}" {{ $kategori_id == $kat->id ? 'selected' : '' }}>
+                            {{ $kat->nama_kategori }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status Stok</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="">-- Semua Status --</option>
+                    <option value="normal" {{ $status == 'normal' ? 'selected' : '' }}>Normal</option>
+                    <option value="kurang" {{ $status == 'kurang' ? 'selected' : '' }}>Kurang</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">🔍 Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @if (count($barang) > 0)
     <div class="table-responsive">
         <table class="table table-hover">
@@ -40,7 +70,7 @@
     </div>
 @else
     <div class="alert alert-info" role="alert">
-        <strong>Belum ada barang.</strong>
+        <strong>Tidak ada barang.</strong>
     </div>
 @endif
 @endsection
