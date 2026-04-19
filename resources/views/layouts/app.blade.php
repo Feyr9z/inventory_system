@@ -147,7 +147,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{{ route('inventory.dashboard') }}">
-                    📦 Inventory
+                    INVENTORY
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
@@ -157,7 +157,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('inventory.dashboard') }}">Dashboard</a>
                         </li>
-                        
+
                         @if (auth()->user()->role === 'admin')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('inventory.barang.index') }}">Barang</a>
@@ -169,7 +169,7 @@
                                 <a class="nav-link" href="{{ route('inventory.user.index') }}">User</a>
                             </li>
                         @endif
-                        
+
                         @if (in_array(auth()->user()->role, ['admin', 'staff']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="transaksiDropdown" role="button" data-bs-toggle="dropdown">
@@ -185,7 +185,7 @@
                                 </ul>
                             </li>
                         @endif
-                        
+
                         @if (in_array(auth()->user()->role, ['admin', 'management']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="laporanDropdown" role="button" data-bs-toggle="dropdown">
@@ -197,13 +197,13 @@
                                 </ul>
                             </li>
                         @endif
-                        
+
                         @if (auth()->user()->role === 'admin')
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('inventory.log-aktivitas') }}">📝 Log</a>
                             </li>
                         @endif
-                        
+
                         @if (in_array(auth()->user()->role, ['staff', 'management']))
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('inventory.barang.index') }}">📦 Stok</a>

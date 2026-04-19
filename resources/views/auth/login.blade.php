@@ -39,35 +39,6 @@
             font-size: 1rem;
             margin-bottom: 0;
         }
-        .demo-users {
-            background-color: #eff6ff;
-            border-left: 4px solid #3B82F6;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-        }
-        .demo-users h4 {
-            color: #1e40af;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-        .demo-user {
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-        }
-        .demo-user strong {
-            display: block;
-            color: #1e40af;
-            margin-bottom: 0.25rem;
-        }
-        .demo-user code {
-            background-color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            color: #374151;
-            font-size: 0.8rem;
-        }
         .form-control {
             border-color: #e5e7eb;
             border-radius: 6px;
@@ -146,25 +117,6 @@
 
             <form action="{{ route('login.post') }}" method="POST">
                 @csrf
-
-                <div class="demo-users">
-                    <h4>📋 Demo Users</h4>
-                    <div class="demo-user">
-                        <strong>👤 Admin</strong>
-                        <code>admin@inventory.test</code>
-                    </div>
-                    <div class="demo-user">
-                        <strong>👤 Staff</strong>
-                        <code>staff@inventory.test</code>
-                    </div>
-                    <div class="demo-user">
-                        <strong>👤 Management</strong>
-                        <code>management@inventory.test</code>
-                    </div>
-                    <div class="demo-user" style="margin-top: 0.75rem; border-top: 1px solid #bfdbfe; padding-top: 0.5rem;">
-                        <small style="color: #1e40af;"><strong>Password:</strong> password</small>
-                    </div>
-                </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email Address</label>
