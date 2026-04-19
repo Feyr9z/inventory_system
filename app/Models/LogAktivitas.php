@@ -12,6 +12,10 @@ class LogAktivitas extends Model
 
     protected $fillable = ["user_id", "aktivitas", "waktu"];
 
+    protected $casts = [
+        'waktu' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
