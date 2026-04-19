@@ -3,7 +3,10 @@
 @section('title', 'Laporan Stok')
 
 @section('content')
-<h2 class="page-title mb-4">Laporan Stok Barang</h2>
+<div class="mb-4">
+    <h2 class="page-title">Laporan Stok Barang</h2>
+    <p class="text-muted">Pantau kondisi stok barang saat ini. Status "Kurang" menunjukkan stok di bawah minimum yang telah ditentukan.</p>
+</div>
 
 <div class="card mb-4">
     <div class="card-body">
@@ -43,7 +46,7 @@
                     <th>No</th>
                     <th>Nama Barang</th>
                     <th>Kategori</th>
-                    <th class="text-end">Stok</th>
+                    <th class="text-end">Stok Saat Ini</th>
                     <th class="text-end">Stok Minimum</th>
                     <th>Status</th>
                     <th>Lokasi</th>
@@ -55,7 +58,7 @@
                         <td><small class="text-muted">#{{ $idx + 1 }}</small></td>
                         <td><strong>{{ $item['nama_barang'] }}</strong></td>
                         <td><span class="badge bg-info">{{ $item['kategori'] }}</span></td>
-                        <td class="text-end"><strong>{{ $item['stok'] }}</strong></td>
+                        <td class="text-end"><strong style="color: {{ $item['stok'] < $item['stok_minimum'] ? '#ef4444' : '#10b981' }}">{{ $item['stok'] }}</strong></td>
                         <td class="text-end">{{ $item['stok_minimum'] }}</td>
                         <td>
                             <span class="badge {{ $item['status'] === 'Kurang' ? 'bg-danger' : 'bg-success' }}">
@@ -67,6 +70,9 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
+    <div class="mt-3 text-muted">
+        <small>📌 <strong>Penjelasan:</strong> Stok Saat Ini = jumlah barang yang tersedia | Stok Minimum = batas terendah yang disarankan | Status Kurang = perlu pemesanan barang baru</small>
     </div>
 @else
     <div class="alert alert-info" role="alert">

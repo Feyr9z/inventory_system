@@ -3,7 +3,10 @@
 @section('title', 'Laporan Transaksi')
 
 @section('content')
-<h2 class="page-title mb-4">Laporan Transaksi</h2>
+<div class="mb-4">
+    <h2 class="page-title">Laporan Transaksi</h2>
+    <p class="text-muted">Lihat riwayat barang masuk dan barang keluar dalam periode waktu tertentu. Membantu tracking pergerakan stok dan analisis kebutuhan.</p>
+</div>
 
 <div class="card mb-4">
     <div class="card-body">
@@ -40,14 +43,16 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="stat-card success">
-                    <h5>📥 Total Masuk</h5>
+                    <h5>📥 Total Barang Masuk</h5>
                     <div class="stat-value">{{ number_format($total_masuk) }}</div>
+                    <small class="text-muted">unit dalam periode ini</small>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="stat-card danger">
-                    <h5>📤 Total Keluar</h5>
+                    <h5>📤 Total Barang Keluar</h5>
                     <div class="stat-value">{{ number_format($total_keluar) }}</div>
+                    <small class="text-muted">unit dalam periode ini</small>
                 </div>
             </div>
         </div>
@@ -61,7 +66,7 @@
                     <th>Tipe</th>
                     <th>Nama Barang</th>
                     <th class="text-end">Jumlah</th>
-                    <th>Keterangan</th>
+                    <th>Sumber/Tujuan</th>
                 </tr>
             </thead>
             <tbody>
@@ -74,12 +79,15 @@
                             </span>
                         </td>
                         <td>{{ $item['nama_barang'] }}</td>
-                        <td class="text-end">{{ abs($item['jumlah']) }}</td>
+                        <td class="text-end"><strong>{{ abs($item['jumlah']) }}</strong></td>
                         <td>{{ $item['keterangan'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+    </div>
+    <div class="mt-3 text-muted">
+        <small>📌 <strong>Penjelasan:</strong> Barang Masuk = penambahan stok dari supplier/sumber | Barang Keluar = pengurangan stok ke tujuan | Total = ringkasan pergerakan barang dalam periode</small>
     </div>
 @else
     <div class="alert alert-info" role="alert">

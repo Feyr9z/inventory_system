@@ -82,13 +82,16 @@ class LaporanController extends Controller
                     'status' => $item->stok < $item->stok_minimum ? 'Kurang' : 'Normal',
                     'lokasi' => $item->lokasi,
                 ];
-            });
+            })
+            ->toArray();
 
         // Filter by status if provided
         if ($status && $status !== 'semua') {
             $barang = array_filter($barang, function ($item) use ($status) {
                 return $item['status'] === ucfirst($status);
             });
+            // Re-index array after filtering
+            $barang = array_values($barang);
         }
 
         $kategori = \App\Models\Kategori::all();

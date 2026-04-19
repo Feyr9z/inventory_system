@@ -36,13 +36,13 @@ Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(functi
     // ======================
     // BARANG (CRUD) - Admin Only, View for Staff
     // ======================
+    // Admin: full CRUD except index (will define separately)
     Route::middleware('role:admin')->group(function () {
-        // Admin: full CRUD (index, create, store, edit, update, destroy)
-        Route::resource("barang", BarangController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+        Route::resource("barang", BarangController::class)->except(['index', 'show']);
     });
     
-    Route::middleware('role:staff,management')->group(function () {
-        // Staff & Management: view only (GET index)
+    // Index accessible to Admin & Staff & Management
+    Route::middleware('role:admin,staff,management')->group(function () {
         Route::get("barang", [BarangController::class, 'index'])->name("barang.index");
     });
 
