@@ -92,9 +92,7 @@
 
     @if ($barang->hasPages())
         <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {{ $barang->links() }}
-            </ul>
+            {{ $barang->appends(request()->query())->links('pagination::bootstrap-5') }}
         </nav>
     @endif
 @endif

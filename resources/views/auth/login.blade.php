@@ -101,7 +101,7 @@
     <div class="login-container">
         <div class="login-box">
             <div class="login-header">
-                <h1>📦 Inventory</h1>
+                <h1>Atha Inventory</h1>
                 <p>Management System</p>
             </div>
 

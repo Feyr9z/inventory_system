@@ -68,11 +68,14 @@ class LaporanController extends Controller
         $kategori_id = $request->input('kategori_id', null);
         $status = $request->input('status', null);
 
-        $barang = Barang::with('kategori')
+        // Build query
+        $query = Barang::with('kategori')
             ->when($kategori_id, function ($query) use ($kategori_id) {
                 return $query->where('kategori_id', $kategori_id);
-            })
-            ->get()
+            });
+
+        // Get all for status filtering
+        $allBarang = $query->get()
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -88,12 +91,28 @@ class LaporanController extends Controller
 
         // Filter by status if provided
         if ($status && $status !== 'semua') {
-            $barang = array_filter($barang, function ($item) use ($status) {
+            $allBarang = array_filter($allBarang, function ($item) use ($status) {
                 return $item['status'] === ucfirst($status);
             });
-            // Re-index array after filtering
-            $barang = array_values($barang);
+            $allBarang = array_values($allBarang);
         }
+
+        // Paginate
+        $page = request('page', 1);
+        $perPage = 15;
+        $total = count($allBarang);
+        $barang = array_slice($allBarang, ($page - 1) * $perPage, $perPage);
+        
+        // Create paginator instance
+        $barang = new \Illuminate\Pagination\Paginator(
+            $barang,
+            $perPage,
+            $page,
+            [
+                'path' => route('inventory.laporan.stok'),
+                'query' => $request->query(),
+            ]
+        );
 
         $kategori = \App\Models\Kategori::all();
 

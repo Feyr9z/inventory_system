@@ -76,6 +76,13 @@
             </tbody>
         </table>
     </div>
+
+    @if ($barang->hasPages())
+        <nav aria-label="Page navigation" class="mt-4">
+            {{ $barang->appends(request()->query())->links('pagination::bootstrap-5') }}
+        </nav>
+    @endif
+
     <div class="mt-3 text-muted">
         <small>📌 <strong>Penjelasan:</strong> Stok Saat Ini = jumlah barang yang tersedia | Stok Minimum = batas terendah yang disarankan | Status Kurang = perlu pemesanan barang baru</small>
     </div>
