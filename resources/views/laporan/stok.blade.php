@@ -31,8 +31,13 @@
                     <option value="kurang" {{ $status == 'kurang' ? 'selected' : '' }}>Kurang</option>
                 </select>
             </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">🔍 Filter</button>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">🔍 Filter</button>
+                @if (count($barang) > 0)
+                    <a href="{{ route('inventory.laporan.stok.export') }}?kategori_id={{ $kategori_id }}&status={{ $status }}" class="btn btn-success" title="Download as CSV">
+                        📥 CSV
+                    </a>
+                @endif
             </div>
         </form>
     </div>

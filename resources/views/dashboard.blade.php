@@ -28,9 +28,10 @@
         </div>
     </div>
     <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
-        <div class="stat-card {{ $barang_minimum > 0 ? 'danger' : 'success' }}">
-            <h5>⚠️ Stok Minimum</h5>
+        <div class="stat-card {{ $barang_minimum > 0 ? 'danger' : 'success' }}" title="Jumlah barang dengan stok dibawah limit minimum yang ditetapkan">
+            <h5>⚠️ Barang Kurang Stok</h5>
             <div class="stat-value">{{ $barang_minimum }}</div>
+            <small class="text-muted d-block mt-2">item perlu restock</small>
         </div>
     </div>
 
@@ -105,6 +106,12 @@
                     <a href="{{ route('inventory.transaksi.opname.create') }}" class="btn btn-outline-secondary w-100">
                         <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔍</div>
                         <small>Stock Opname</small>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{{ route('inventory.opname.history') }}" class="btn btn-outline-info w-100">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📋</div>
+                        <small>History Opname</small>
                     </a>
                 </div>
                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">

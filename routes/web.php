@@ -96,6 +96,10 @@ Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(functi
                     StockOpnameController::class,
                     "store",
                 ])->name("opname.store");
+                Route::get("opname-history", [
+                    StockOpnameController::class,
+                    "history",
+                ])->name("opname.history");
             });
         });
 
@@ -105,6 +109,8 @@ Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(functi
     Route::middleware('role:admin,management')->group(function () {
         Route::get("laporan/transaksi", [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
         Route::get("laporan/stok", [LaporanController::class, 'stok'])->name('laporan.stok');
+        Route::get("laporan/transaksi/export/csv", [LaporanController::class, 'exportTransaksiCsv'])->name('laporan.transaksi.export');
+        Route::get("laporan/stok/export/csv", [LaporanController::class, 'exportStokCsv'])->name('laporan.stok.export');
     });
 
     // ======================

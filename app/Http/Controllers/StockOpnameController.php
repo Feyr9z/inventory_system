@@ -41,4 +41,13 @@ class StockOpnameController extends Controller
             ->route("inventory.transaksi.opname.create")
             ->with("success", "Stock opname berhasil dicatat");
     }
+
+    public function history(Request $request)
+    {
+        $opname = StockOpname::with('barang')
+            ->orderBy('tanggal', 'desc')
+            ->paginate(20);
+
+        return view('transaksi.opname-history', compact('opname'));
+    }
 }

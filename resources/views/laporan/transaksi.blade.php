@@ -31,8 +31,13 @@
                 </select>
             </div>
 
-            <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">🔍 Tampilkan Laporan</button>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">🔍 Tampilkan Laporan</button>
+                @if ($data)
+                    <a href="{{ route('inventory.laporan.transaksi.export') }}?dari_tanggal={{ $dari_tanggal }}&sampai_tanggal={{ $sampai_tanggal }}&tipe_transaksi={{ $tipe_transaksi }}" class="btn btn-success" title="Download as CSV">
+                        📥 CSV
+                    </a>
+                @endif
             </div>
         </form>
     </div>
