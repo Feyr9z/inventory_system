@@ -9,10 +9,13 @@ class KategoriSeeder extends Seeder
 {
     public function run(): void
     {
-        Kategori::create(['nama_kategori' => 'Elektronik']);
-        Kategori::create(['nama_kategori' => 'Pakaian']);
-        Kategori::create(['nama_kategori' => 'Makanan']);
-        Kategori::create(['nama_kategori' => 'Peralatan Kantor']);
-        Kategori::create(['nama_kategori' => 'Alat Tulis']);
+        Kategori::create(['nama_kategori' => 'Bahan Billboard']);
+        Kategori::create(['nama_kategori' => 'Spanduk & Banner']);
+        Kategori::create(['nama_kategori' => 'Baliho']);
+        Kategori::create(['nama_kategori' => 'Vertical Banner']);
+        Kategori::create(['nama_kategori' => 'Event Toolbox']);
+        Kategori::create(['nama_kategori' => 'Struktur & Frame']);
+        Kategori::create(['nama_kategori' => 'Hardware & Perlengkapan']);
+        Kategori::create(['nama_kategori' => 'Supplies & Material']);
     }
 }
