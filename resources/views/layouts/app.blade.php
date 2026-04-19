@@ -206,7 +206,7 @@
                         
                         @if (in_array(auth()->user()->role, ['staff', 'management']))
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('inventory.stok') }}">📦 Stok</a>
+                                <a class="nav-link" href="{{ route('inventory.barang.index') }}">📦 Stok</a>
                             </li>
                         @endif
                     </ul>
