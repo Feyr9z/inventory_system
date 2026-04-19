@@ -8,22 +8,33 @@ use Illuminate\Http\Request;
 
 class BarangMasukController extends Controller
 {
+    public function create()
+    {
+        $barang = Barang::all();
+        return view("transaksi.masuk", compact("barang"));
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
-            "barang_id" => "required",
+        $validated = $request->validate([
+            "barang_id" => "required|exists:barang,id",
             "jumlah" => "required|integer|min:1",
+            "tanggal" => "required|date",
+            "sumber" => "required|string|max:255",
         ]);
 
-        $barang = Barang::findOrFail($request->barang_id);
+        $barang = Barang::findOrFail($validated["barang_id"]);
 
         // tambah stok
-        $barang->stok += $request->jumlah;
+        $barang->stok += $validated["jumlah"];
         $barang->save();
 
         // simpan transaksi
-        BarangMasuk::create($request->all());
+        BarangMasuk::create($validated);
 
-        return back();
+        return redirect()
+            ->route("inventory.transaksi.masuk.create")
+            ->with("success", "Barang masuk berhasil dicatat");
     }
 }
+

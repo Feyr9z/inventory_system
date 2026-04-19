@@ -22,14 +22,24 @@ class BarangController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            "nama_barang" => "required",
-            "kategori_id" => "required",
+        $validated = $request->validate([
+            "nama_barang" => "required|string|max:255",
+            "kategori_id" => "required|exists:kategori,id",
+            "stok_minimum" => "required|integer|min:0",
+            "lokasi" => "nullable|string|max:255",
         ]);
 
-        Barang::create($request->all());
+        Barang::create($validated);
 
-        return redirect("/barang");
+        return redirect()
+            ->route("inventory.barang.index")
+            ->with("success", "Barang berhasil ditambahkan");
+    }
+
+    public function show($id)
+    {
+        $barang = Barang::with("kategori", "barangMasuk", "barangKeluar")->findOrFail($id);
+        return view("barang.show", compact("barang"));
     }
 
     public function edit($id)
@@ -43,14 +53,26 @@ class BarangController extends Controller
     public function update(Request $request, $id)
     {
         $barang = Barang::findOrFail($id);
-        $barang->update($request->all());
 
-        return redirect("/barang");
+        $validated = $request->validate([
+            "nama_barang" => "required|string|max:255",
+            "kategori_id" => "required|exists:kategori,id",
+            "stok_minimum" => "required|integer|min:0",
+            "lokasi" => "nullable|string|max:255",
+        ]);
+
+        $barang->update($validated);
+
+        return redirect()
+            ->route("inventory.barang.index")
+            ->with("success", "Barang berhasil diperbarui");
     }
 
     public function destroy($id)
     {
         Barang::destroy($id);
-        return redirect("/barang");
+        return redirect()
+            ->route("inventory.barang.index")
+            ->with("success", "Barang berhasil dihapus");
     }
 }

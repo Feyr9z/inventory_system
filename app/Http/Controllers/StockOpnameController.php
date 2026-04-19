@@ -8,28 +8,37 @@ use Illuminate\Http\Request;
 
 class StockOpnameController extends Controller
 {
+    public function create()
+    {
+        $barang = Barang::all();
+        return view("transaksi.opname", compact("barang"));
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
-            "barang_id" => "required",
-            "stok_fisik" => "required|integer",
+        $validated = $request->validate([
+            "barang_id" => "required|exists:barang,id",
+            "stok_fisik" => "required|integer|min:0",
+            "tanggal" => "required|date",
         ]);
 
-        $barang = Barang::findOrFail($request->barang_id);
+        $barang = Barang::findOrFail($validated["barang_id"]);
 
-        $selisih = $request->stok_fisik - $barang->stok;
+        $selisih = $validated["stok_fisik"] - $barang->stok;
 
         // update stok
-        $barang->stok = $request->stok_fisik;
+        $barang->stok = $validated["stok_fisik"];
         $barang->save();
 
         StockOpname::create([
-            "barang_id" => $request->barang_id,
-            "stok_fisik" => $request->stok_fisik,
+            "barang_id" => $validated["barang_id"],
+            "stok_fisik" => $validated["stok_fisik"],
             "selisih" => $selisih,
-            "tanggal" => now(),
+            "tanggal" => $validated["tanggal"],
         ]);
 
-        return back();
+        return redirect()
+            ->route("inventory.transaksi.opname.create")
+            ->with("success", "Stock opname berhasil dicatat");
     }
 }

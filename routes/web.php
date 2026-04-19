@@ -34,16 +34,31 @@ Route::prefix("inventory")
         Route::prefix("transaksi")
             ->name("transaksi.")
             ->group(function () {
+                // Barang Masuk
+                Route::get("masuk", [
+                    BarangMasukController::class,
+                    "create",
+                ])->name("masuk.create");
                 Route::post("masuk", [
                     BarangMasukController::class,
                     "store",
                 ])->name("masuk.store");
 
+                // Barang Keluar
+                Route::get("keluar", [
+                    BarangKeluarController::class,
+                    "create",
+                ])->name("keluar.create");
                 Route::post("keluar", [
                     BarangKeluarController::class,
                     "store",
                 ])->name("keluar.store");
 
+                // Stock Opname
+                Route::get("opname", [
+                    StockOpnameController::class,
+                    "create",
+                ])->name("opname.create");
                 Route::post("opname", [
                     StockOpnameController::class,
                     "store",
