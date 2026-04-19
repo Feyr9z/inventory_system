@@ -34,8 +34,14 @@ Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(functi
     Route::get("/", [DashboardController::class, "index"])->name("dashboard");
 
     // ======================
-    // BARANG (CRUD) - Admin Only
+    // BARANG (CRUD) - Admin Only, View for Staff
     // ======================
+    // View only for Staff & Management
+    Route::middleware('role:staff,management')->group(function () {
+        Route::get("barang", [BarangController::class, 'index'])->name("barang.index");
+    });
+    
+    // Full CRUD for Admin only
     Route::middleware('role:admin')->group(function () {
         Route::resource("barang", BarangController::class);
     });
@@ -106,12 +112,5 @@ Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(functi
     // ======================
     Route::middleware('role:admin')->group(function () {
         Route::get("log-aktivitas", [LogAktivitasController::class, 'index'])->name('log-aktivitas');
-    });
-
-    // ======================
-    // STOK VIEW - Staff & Management
-    // ======================
-    Route::middleware('role:staff,management')->group(function () {
-        Route::get("stok", [BarangController::class, 'index'])->name('stok');
     });
 });
