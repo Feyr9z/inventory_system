@@ -114,9 +114,9 @@ Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(functi
     });
 
     // ======================
-    // LOG AKTIVITAS - Admin Only
+    // LOG AKTIVITAS - Admin & Management
     // ======================
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware('role:admin,management')->group(function () {
         Route::get("log-aktivitas", [LogAktivitasController::class, 'index'])->name('log-aktivitas');
     });
 });

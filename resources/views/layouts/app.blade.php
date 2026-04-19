@@ -198,7 +198,7 @@
                             </li>
                         @endif
 
-                        @if (auth()->user()->role === 'admin')
+                        @if (in_array(auth()->user()->role, ['admin', 'management']))
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('inventory.log-aktivitas') }}">📝 Log</a>
                             </li>
