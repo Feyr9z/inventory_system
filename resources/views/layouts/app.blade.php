@@ -181,6 +181,7 @@
                                     @if (auth()->user()->role === 'admin')
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" href="{{ route('inventory.transaksi.opname.create') }}">🔍 Stock Opname</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('inventory.transaksi.opname.history') }}">📋 History Opname</a></li>
                                     @endif
                                 </ul>
                             </li>
