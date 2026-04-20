@@ -7,17 +7,20 @@ use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, ...$roles)
+    public function handle(Request $request, Closure $next, string $roles)
     {
         if (!auth()->check()) {
             return redirect(route('login'));
         }
 
-        if (!in_array(auth()->user()->role, $roles)) {
-            return redirect(route('inventory.dashboard'))
-                ->with('error', 'Anda tidak memiliki akses ke halaman ini');
+        // Parse roles - can be comma or pipe separated
+        $allowedRoles = array_filter(explode('|', str_replace(',', '|', $roles)));
+        
+        if (in_array(auth()->user()->role, $allowedRoles)) {
+            return $next($request);
         }
 
-        return $next($request);
+        return redirect(route('inventory.dashboard'))
+            ->with('error', 'Anda tidak memiliki akses ke halaman ini');
     }
 }

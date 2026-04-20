@@ -195,6 +195,8 @@
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="{{ route('inventory.laporan.transaksi') }}">📈 Laporan Transaksi</a></li>
                                     <li><a class="dropdown-item" href="{{ route('inventory.laporan.stok') }}">📊 Laporan Stok</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('inventory.transaksi.opname.history') }}">📋 History Opname</a></li>
                                 </ul>
                             </li>
                         @endif

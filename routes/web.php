@@ -96,11 +96,17 @@ Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(functi
                     StockOpnameController::class,
                     "store",
                 ])->name("opname.store");
-                Route::get("opname-history", [
-                    StockOpnameController::class,
-                    "history",
-                ])->name("opname.history");
             });
+        });
+
+    // Opname History - Admin & Management (Outside transaksi group for management access)
+    Route::prefix("transaksi")->name("transaksi.")
+        ->middleware('role:admin|management')
+        ->group(function () {
+            Route::get("opname-history", [
+                StockOpnameController::class,
+                "history",
+            ])->name("opname.history");
         });
 
     // ======================

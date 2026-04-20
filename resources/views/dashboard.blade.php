@@ -142,6 +142,12 @@
                     </a>
                 </div>
                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <a href="{{ route('inventory.transaksi.opname.history') }}" class="btn btn-outline-primary w-100">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📋</div>
+                        <small>History Opname</small>
+                    </a>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
                     <a href="{{ route('inventory.log-aktivitas') }}" class="btn btn-outline-primary w-100">
                         <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📝</div>
                         <small>Log Aktivitas</small>
