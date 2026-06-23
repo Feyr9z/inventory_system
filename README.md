@@ -245,9 +245,9 @@ Anda akan diarahkan ke halaman login. Gunakan kredensial seeding:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@example.test | password |
-| Staff | staff@example.test | password |
-| Management | management@example.test | password |
+| Admin | admin@inventory.test | password |
+| Staff | staff@inventory.test | password |
+| Management | management@inventory.test | password |
 
 ### **Testing Flow per Role**
 
