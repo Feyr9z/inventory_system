@@ -38,20 +38,59 @@ body {
     padding-bottom: 0.75rem;
 }
 
-/* Fix Bootstrap 5 + Tailwind CSS v4 conflict on Navbar Collapse */
-.navbar-expand-lg .navbar-collapse {
-    display: flex !important;
-    visibility: visible !important;
-    flex-basis: auto !important;
+/* Fix Bootstrap 5 + Tailwind CSS v4 conflict & Mobile Navbar Polish */
+@media (min-width: 992px) {
+    .navbar-expand-lg .navbar-collapse {
+        display: flex !important;
+        visibility: visible !important;
+        flex-basis: auto !important;
+    }
 }
 
 @media (max-width: 991.98px) {
     .navbar-expand-lg .navbar-collapse {
         display: none !important;
     }
+    
     .navbar-expand-lg .navbar-collapse.show {
         display: block !important;
         visibility: visible !important;
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 0.875rem;
+        padding: 1rem;
+        margin-top: 0.75rem;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .navbar-custom .nav-link {
+        padding: 0.65rem 1rem !important;
+        width: 100%;
+        border-radius: 0.5rem;
+    }
+
+    .navbar-custom .dropdown-menu {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        margin-top: 0.25rem;
+        margin-bottom: 0.5rem;
+        padding: 0.35rem;
+    }
+
+    .navbar-custom .dropdown-item {
+        color: #cbd5e1;
+        padding: 0.6rem 0.85rem;
+    }
+
+    .navbar-custom .dropdown-item:hover {
+        background-color: #334155;
+        color: #ffffff;
+    }
+
+    .navbar-user-section {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #1e293b;
     }
 }
 

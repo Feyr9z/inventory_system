@@ -29,31 +29,31 @@
                     </div>
                     <span>{{ config('app.name', 'INVENTORY') }}</span>
                 </a>
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-lg-1">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 me-lg-3 gap-lg-1">
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('inventory.dashboard') ? 'active' : '' }}" href="{{ route('inventory.dashboard') }}">
-                                <i class="bi bi-speedometer2"></i> Dashboard
+                                Dashboard
                             </a>
                         </li>
 
                         @if (auth()->user()->role === 'admin')
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.barang.*') ? 'active' : '' }}" href="{{ route('inventory.barang.index') }}">
-                                    <i class="bi bi-box-seam"></i> Barang
+                                    Barang
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.kategori.*') ? 'active' : '' }}" href="{{ route('inventory.kategori.index') }}">
-                                    <i class="bi bi-tags"></i> Kategori
+                                    Kategori
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.user.*') ? 'active' : '' }}" href="{{ route('inventory.user.index') }}">
-                                    <i class="bi bi-people"></i> User
+                                    User
                                 </a>
                             </li>
                         @endif
@@ -61,29 +61,29 @@
                         @if (in_array(auth()->user()->role, ['admin', 'staff']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle {{ request()->routeIs('inventory.transaksi.*') ? 'active' : '' }}" href="#" id="transaksiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-arrow-left-right"></i> Transaksi
+                                    Transaksi
                                 </a>
                                 <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="transaksiDropdown">
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.transaksi.masuk.create') }}">
-                                            <i class="bi bi-arrow-down-left-circle text-success fs-6"></i> Barang Masuk
+                                            Barang Masuk
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.transaksi.keluar.create') }}">
-                                            <i class="bi bi-arrow-up-right-circle text-danger fs-6"></i> Barang Keluar
+                                            Barang Keluar
                                         </a>
                                     </li>
                                     @if (auth()->user()->role === 'admin')
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.create') }}">
-                                                <i class="bi bi-clipboard-check text-warning fs-6"></i> Stock Opname
+                                                Stock Opname
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.history') }}">
-                                                <i class="bi bi-journal-text text-secondary fs-6"></i> History Opname
+                                                History Opname
                                             </a>
                                         </li>
                                     @endif
@@ -94,23 +94,23 @@
                         @if (in_array(auth()->user()->role, ['admin', 'management']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle {{ request()->routeIs('inventory.laporan.*') ? 'active' : '' }}" href="#" id="laporanDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-file-earmark-bar-graph"></i> Laporan
+                                    Laporan
                                 </a>
                                 <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="laporanDropdown">
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.laporan.transaksi') }}">
-                                            <i class="bi bi-graph-up-arrow text-primary fs-6"></i> Laporan Transaksi
+                                            Laporan Transaksi
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.laporan.stok') }}">
-                                            <i class="bi bi-bar-chart-line text-info fs-6"></i> Laporan Stok
+                                            Laporan Stok
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.history') }}">
-                                            <i class="bi bi-journal-text text-secondary fs-6"></i> History Opname
+                                            History Opname
                                         </a>
                                     </li>
                                 </ul>
@@ -120,7 +120,7 @@
                         @if (in_array(auth()->user()->role, ['admin', 'management']))
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.log-aktivitas') ? 'active' : '' }}" href="{{ route('inventory.log-aktivitas') }}">
-                                    <i class="bi bi-clock-history"></i> Log Aktivitas
+                                    Log Aktivitas
                                 </a>
                             </li>
                         @endif
@@ -128,26 +128,26 @@
                         @if (in_array(auth()->user()->role, ['staff', 'management']))
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.barang.*') ? 'active' : '' }}" href="{{ route('inventory.barang.index') }}">
-                                    <i class="bi bi-boxes"></i> Stok Barang
+                                    Stok Barang
                                 </a>
                             </li>
                         @endif
                     </ul>
 
-                    <div class="d-flex align-items-center gap-3">
+                    <div class="navbar-user-section d-flex align-items-center justify-content-between justify-content-lg-end gap-3">
                         <div class="d-flex align-items-center gap-2 text-white">
                             <div class="avatar-initial">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                             </div>
-                            <div class="d-none d-md-block">
-                                <div class="fw-semibold lh-1 fs-6">{{ auth()->user()->name }}</div>
+                            <div>
+                                <div class="fw-semibold lh-1 fs-6 text-white">{{ auth()->user()->name }}</div>
                                 <small class="text-white-50 text-capitalize fs-7">{{ auth()->user()->role }}</small>
                             </div>
                         </div>
                         <form action="{{ route('logout') }}" method="POST" class="m-0">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 rounded-2">
-                                <i class="bi bi-box-arrow-right"></i> Logout
+                                Logout
                             </button>
                         </form>
                     </div>
