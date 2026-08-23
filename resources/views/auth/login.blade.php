@@ -3,115 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Inventory Management</title>
+    <title>Login - {{ config('app.name', 'Inventory System') }}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- App Asset Bundler -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     <style>
         body {
-            background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        .login-container {
+        .login-card {
             width: 100%;
-            max-width: 400px;
-            padding: 1rem;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .login-box {
-            background: white;
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        .login-icon-badge {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            margin: 0 auto 1.25rem;
         }
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .login-header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 0.5rem;
-        }
-        .login-header p {
-            color: #6b7280;
-            font-size: 1rem;
-            margin-bottom: 0;
+        .input-group-text {
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+            color: #64748b;
         }
         .form-control {
-            border-color: #e5e7eb;
-            border-radius: 6px;
-            padding: 0.65rem 0.875rem;
-            font-size: 0.95rem;
+            border-color: #e2e8f0;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.925rem;
         }
         .form-control:focus {
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-        }
-        .form-label {
-            color: #374151;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        .form-check-input {
-            border-color: #d1d5db;
-        }
-        .form-check-input:checked {
-            background-color: #3B82F6;
-            border-color: #3B82F6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
         }
         .btn-login {
-            background: linear-gradient(135deg, #3B82F6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             border: none;
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1rem;
             font-weight: 600;
-            border-radius: 6px;
-            width: 100%;
+            border-radius: 0.5rem;
             color: white;
-            transition: all 0.3s ease;
-            margin-top: 1.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         }
         .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-        }
-        .btn-login:active {
-            transform: translateY(0);
-        }
-        .error-message {
-            background-color: #fee2e2;
-            border-left: 4px solid #ef4444;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-        }
-        .error-message ul {
-            margin-bottom: 0;
-            padding-left: 1.5rem;
-        }
-        .error-message li {
-            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <h1>Atha Inventory</h1>
-                <p>Management System</p>
+    <div class="container p-3">
+        <div class="login-card mx-auto p-4 p-md-5">
+            <div class="text-center mb-4">
+                <div class="login-icon-badge">
+                    <i class="bi bi-box-seam-fill fs-2"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">{{ config('app.name', 'Inventory System') }}</h4>
+                <p class="text-muted small mb-0">Management System Login</p>
             </div>
 
             @if ($errors->any())
-                <div class="error-message">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div class="alert alert-danger alert-custom mb-4 py-2 px-3 small d-flex align-items-start gap-2" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-6 mt-1 flex-shrink-0"></i>
+                    <div>
+                        <ul class="mb-0 ps-2">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
             @endif
 
@@ -119,23 +108,31 @@
                 @csrf
 
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="email" name="email" required value="{{ old('email') }}" placeholder="admin@inventory.test">
+                    <label for="email" class="form-label fw-semibold small text-secondary">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control" id="email" name="email" required value="{{ old('email') }}" placeholder="admin@inventory.test">
+                    </div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                    <label for="password" class="form-label fw-semibold small text-secondary">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+                    </div>
                 </div>
 
-                <div class="form-check mb-3">
+                <div class="form-check mb-4">
                     <input class="form-check-input" type="checkbox" id="remember" name="remember">
-                    <label class="form-check-label" for="remember">
+                    <label class="form-check-label small text-secondary" for="remember">
                         Remember me for 30 days
                     </label>
                 </div>
 
-                <button type="submit" class="btn-login">Login</button>
+                <button type="submit" class="btn btn-login w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </button>
             </form>
         </div>
     </div>
