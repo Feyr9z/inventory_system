@@ -3,97 +3,134 @@
 @section('title', 'Daftar Barang')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="page-title mb-0">Daftar Barang</h2>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">Daftar Barang</h3>
+        <p class="text-muted small mb-0">Kelola inventaris stok dan informasi barang</p>
+    </div>
     @if (auth()->user()->role === 'admin')
-        <a href="{{ route('inventory.barang.create') }}" class="btn btn-primary">+ Tambah Barang</a>
+        <a href="{{ route('inventory.barang.create') }}" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+            <i class="bi bi-plus-lg"></i> Tambah Barang
+        </a>
     @endif
 </div>
 
 @if (session('warning'))
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        ⚠️ {{ session('warning') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-warning alert-custom alert-dismissible fade show d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
+        <div>{{ session('warning') }}</div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
-<div class="card mb-4">
-    <div class="card-body">
-        <form action="{{ route('inventory.barang.index') }}" method="GET" class="row g-3">
-            <div class="col-md-6">
-                <input type="text" name="search" class="form-control" placeholder="Cari barang..." value="{{ request('search') }}">
+<!-- Search & Filter Card -->
+<div class="card-elevated p-3 mb-4">
+    <form action="{{ route('inventory.barang.index') }}" method="GET" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari nama barang atau lokasi..." value="{{ request('search') }}">
             </div>
-            <div class="col-md-4">
-                <select name="kategori" class="form-select">
-                    <option value="">Semua Kategori</option>
-                    @foreach (\App\Models\Kategori::all() as $kat)
-                        <option value="{{ $kat->id }}" {{ request('kategori') == $kat->id ? 'selected' : '' }}>
-                            {{ $kat->nama_kategori }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-outline-primary w-100">🔍 Cari</button>
-            </div>
-        </form>
-    </div>
+        </div>
+        <div class="col-md-4">
+            <select name="kategori" class="form-select">
+                <option value="">Semua Kategori</option>
+                @foreach (\App\Models\Kategori::all() as $kat)
+                    <option value="{{ $kat->id }}" {{ request('kategori') == $kat->id ? 'selected' : '' }}>
+                        {{ $kat->nama_kategori }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-filter"></i> Filter
+            </button>
+        </div>
+    </form>
 </div>
 
-@if ($barang->isEmpty())
-    <div class="alert alert-info" role="alert">
-        <strong>Belum ada barang.</strong> <a href="{{ route('inventory.barang.create') }}" class="alert-link">Tambah barang baru</a>
-    </div>
-@else
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nama Barang</th>
-                    <th>Kategori</th>
-                    <th>Stok</th>
-                    <th>Minimum</th>
-                    <th>Lokasi</th>
-                    <th style="width: 150px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($barang as $item)
+<!-- Table Card -->
+<div class="card-elevated overflow-hidden">
+    @if ($barang->isEmpty())
+        <div class="p-5 text-center text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+            <h5 class="fw-semibold text-dark">Belum Ada Barang</h5>
+            <p class="small mb-3">Tidak ada data barang yang sesuai dengan pencarian kamu.</p>
+            @if (auth()->user()->role === 'admin')
+                <a href="{{ route('inventory.barang.create') }}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Tambah Barang Baru
+                </a>
+            @endif
+        </div>
+    @else
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
                     <tr>
-                        <td><small class="text-muted">#{{ $item->id }}</small></td>
-                        <td><strong>{{ $item->nama_barang }}</strong></td>
-                        <td><span class="badge bg-info">{{ $item->kategori->nama_kategori ?? '-' }}</span></td>
-                        <td>
-                            @if ($item->stok < $item->stok_minimum)
-                                <span class="stock-alert">{{ $item->stok }}</span>
-                                <span class="badge bg-danger">RENDAH</span>
-                            @else
-                                <strong>{{ $item->stok }}</strong>
-                            @endif
-                        </td>
-                        <td>{{ $item->stok_minimum }}</td>
-                        <td><small>{{ $item->lokasi ?? '-' }}</small></td>
-                        <td>
-                            <a href="{{ route('inventory.barang.edit', $item->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            @if (auth()->user()->role === 'admin')
-                                <form action="{{ route('inventory.barang.destroy', $item->id) }}" method="POST" style="display: inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Yakin ingin menghapus?')">Hapus</button>
-                                </form>
-                            @endif
-                        </td>
+                        <th class="ps-4">ID</th>
+                        <th>Nama Barang</th>
+                        <th>Kategori</th>
+                        <th>Stok Unit</th>
+                        <th>Stok Min.</th>
+                        <th>Lokasi</th>
+                        <th class="text-end pe-4">Aksi</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach ($barang as $item)
+                        <tr>
+                            <td class="ps-4"><span class="text-muted fw-semibold small">#{{ $item->id }}</span></td>
+                            <td>
+                                <span class="fw-bold text-dark d-block">{{ $item->nama_barang }}</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-subtle-info">
+                                    <i class="bi bi-tag-fill me-1"></i>{{ $item->kategori->nama_kategori ?? '-' }}
+                                </span>
+                            </td>
+                            <td>
+                                @if ($item->stok < $item->stok_minimum)
+                                    <span class="badge badge-subtle-danger d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> {{ $item->stok }} (Rendah)
+                                    </span>
+                                @else
+                                    <span class="fw-semibold text-dark">{{ $item->stok }}</span>
+                                @endif
+                            </td>
+                            <td><span class="text-secondary">{{ $item->stok_minimum }}</span></td>
+                            <td>
+                                <span class="text-muted small">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ $item->lokasi ?? '-' }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ route('inventory.barang.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if (auth()->user()->role === 'admin')
+                                        <form action="{{ route('inventory.barang.destroy', $item->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger" title="Hapus" onclick="return confirm('Yakin ingin menghapus barang ini?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-    @if ($barang->hasPages())
-        <nav aria-label="Page navigation" class="mt-4">
-            {{ $barang->appends(request()->query())->links('pagination::bootstrap-5') }}
-        </nav>
+        @if ($barang->hasPages())
+            <div class="p-3 border-top bg-light">
+                {{ $barang->appends(request()->query())->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
     @endif
-@endif
+</div>
 @endsection
