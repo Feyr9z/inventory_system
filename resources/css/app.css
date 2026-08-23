@@ -38,6 +38,23 @@ body {
     padding-bottom: 0.75rem;
 }
 
+/* Fix Bootstrap 5 + Tailwind CSS v4 conflict on Navbar Collapse */
+.navbar-expand-lg .navbar-collapse {
+    display: flex !important;
+    visibility: visible !important;
+    flex-basis: auto !important;
+}
+
+@media (max-width: 991.98px) {
+    .navbar-expand-lg .navbar-collapse {
+        display: none !important;
+    }
+    .navbar-expand-lg .navbar-collapse.show {
+        display: block !important;
+        visibility: visible !important;
+    }
+}
+
 .navbar-custom .navbar-brand {
     font-weight: 700;
     letter-spacing: -0.02em;

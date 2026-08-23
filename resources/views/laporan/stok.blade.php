@@ -12,7 +12,7 @@
 
 <!-- Filter Card -->
 <div class="card-elevated p-4 mb-4">
-    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-funnel me-1 text-primary"></i> Filter Kategori & Status</h6>
+    <h6 class="fw-bold text-dark mb-3">Filter Kategori & Status</h6>
     <form action="{{ route('inventory.laporan.stok') }}" method="GET" class="row g-3">
         <div class="col-md-4">
             <label for="kategori_id" class="form-label fw-semibold small text-secondary">Kategori</label>

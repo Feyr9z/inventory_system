@@ -12,7 +12,7 @@
 
 <!-- Filter Card -->
 <div class="card-elevated p-4 mb-4">
-    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-funnel me-1 text-primary"></i> Filter Periode Transaksi</h6>
+    <h6 class="fw-bold text-dark mb-3">Filter Periode Transaksi</h6>
     <form action="{{ route('inventory.laporan.transaksi') }}" method="GET" class="row g-3">
         <div class="col-md-3">
             <label for="dari_tanggal" class="form-label fw-semibold small text-secondary">Dari Tanggal <span class="text-danger">*</span></label>

@@ -135,8 +135,7 @@
 
 <!-- Quick Access Section -->
 <div class="card-elevated p-4">
-    <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
-        <i class="bi bi-lightning-charge-fill text-warning fs-5"></i>
+    <div class="mb-3 pb-2 border-bottom">
         <h5 class="fw-bold mb-0 text-dark">Akses Cepat</h5>
     </div>
     
