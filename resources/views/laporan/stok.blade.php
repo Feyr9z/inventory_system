@@ -3,92 +3,109 @@
 @section('title', 'Laporan Stok')
 
 @section('content')
-<div class="mb-4">
-    <h2 class="page-title">Laporan Stok Barang</h2>
-    <p class="text-muted">Pantau kondisi stok barang saat ini. Status "Kurang" menunjukkan stok di bawah minimum yang telah ditentukan.</p>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">Laporan Stok Barang</h3>
+        <p class="text-muted small mb-0">Monitor posisi ketersediaan stok barang dan deteksi stok kritis</p>
+    </div>
 </div>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title mb-3">Filter Laporan</h5>
-        <form action="{{ route('inventory.laporan.stok') }}" method="GET" class="row g-3">
-            <div class="col-md-4">
-                <label for="kategori_id" class="form-label">Kategori</label>
-                <select id="kategori_id" name="kategori_id" class="form-select">
-                    <option value="">-- Semua Kategori --</option>
-                    @foreach ($kategori as $kat)
-                        <option value="{{ $kat->id }}" {{ $kategori_id == $kat->id ? 'selected' : '' }}>
-                            {{ $kat->nama_kategori }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="status" class="form-label">Status Stok</label>
-                <select id="status" name="status" class="form-select">
-                    <option value="">-- Semua Status --</option>
-                    <option value="normal" {{ $status == 'normal' ? 'selected' : '' }}>Normal</option>
-                    <option value="kurang" {{ $status == 'kurang' ? 'selected' : '' }}>Kurang</option>
-                </select>
-            </div>
-            <div class="col-md-4 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">🔍 Filter</button>
-                @if (count($barang) > 0)
-                    <a href="{{ route('inventory.laporan.stok.export') }}?kategori_id={{ $kategori_id }}&status={{ $status }}" class="btn btn-success" title="Download as CSV">
-                        📥 CSV
-                    </a>
-                @endif
-            </div>
-        </form>
-    </div>
+<!-- Filter Card -->
+<div class="card-elevated p-4 mb-4">
+    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-funnel me-1 text-primary"></i> Filter Kategori & Status</h6>
+    <form action="{{ route('inventory.laporan.stok') }}" method="GET" class="row g-3">
+        <div class="col-md-4">
+            <label for="kategori_id" class="form-label fw-semibold small text-secondary">Kategori</label>
+            <select id="kategori_id" name="kategori_id" class="form-select">
+                <option value="">-- Semua Kategori --</option>
+                @foreach ($kategori as $kat)
+                    <option value="{{ $kat->id }}" {{ $kategori_id == $kat->id ? 'selected' : '' }}>
+                        {{ $kat->nama_kategori }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="status" class="form-label fw-semibold small text-secondary">Status Stok</label>
+            <select id="status" name="status" class="form-select">
+                <option value="">-- Semua Status --</option>
+                <option value="normal" {{ $status == 'normal' ? 'selected' : '' }}>Normal (Aman)</option>
+                <option value="kurang" {{ $status == 'kurang' ? 'selected' : '' }}>Kurang (Perlu Restock)</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1 fw-semibold d-flex align-items-center justify-content-center gap-1">
+                <i class="bi bi-filter"></i> Filter
+            </button>
+            @if (count($barang) > 0)
+                <a href="{{ route('inventory.laporan.stok.export') }}?kategori_id={{ $kategori_id }}&status={{ $status }}" class="btn btn-success fw-semibold d-flex align-items-center gap-1" title="Download CSV">
+                    <i class="bi bi-download"></i> Export CSV
+                </a>
+            @endif
+        </div>
+    </form>
 </div>
 
 @if (count($barang) > 0)
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nama Barang</th>
-                    <th>Kategori</th>
-                    <th class="text-end">Stok Saat Ini</th>
-                    <th class="text-end">Stok Minimum</th>
-                    <th>Status</th>
-                    <th>Lokasi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($barang as $idx => $item)
+    <div class="card-elevated overflow-hidden mb-4">
+        <div class="table-responsive">
+            <table class="table table-custom align-middle">
+                <thead>
                     <tr>
-                        <td><small class="text-muted">#{{ $idx + 1 }}</small></td>
-                        <td><strong>{{ $item['nama_barang'] }}</strong></td>
-                        <td><span class="badge bg-info">{{ $item['kategori'] }}</span></td>
-                        <td class="text-end"><strong style="color: {{ $item['stok'] < $item['stok_minimum'] ? '#ef4444' : '#10b981' }}">{{ $item['stok'] }}</strong></td>
-                        <td class="text-end">{{ $item['stok_minimum'] }}</td>
-                        <td>
-                            <span class="badge {{ $item['status'] === 'Kurang' ? 'bg-danger' : 'bg-success' }}">
-                                {{ $item['status'] }}
-                            </span>
-                        </td>
-                        <td><small>{{ $item['lokasi'] ?? '-' }}</small></td>
+                        <th class="ps-4">No</th>
+                        <th>Nama Barang</th>
+                        <th>Kategori</th>
+                        <th class="text-end">Stok Saat Ini</th>
+                        <th class="text-end">Stok Minimum</th>
+                        <th>Status Stok</th>
+                        <th class="pe-4">Lokasi</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach ($barang as $idx => $item)
+                        <tr>
+                            <td class="ps-4"><span class="text-muted fw-semibold small">#{{ $idx + 1 }}</span></td>
+                            <td><span class="fw-bold text-dark">{{ $item['nama_barang'] }}</span></td>
+                            <td>
+                                <span class="badge badge-subtle-info">
+                                    <i class="bi bi-tag-fill me-1"></i>{{ $item['kategori'] }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold fs-6 {{ $item['stok'] < $item['stok_minimum'] ? 'text-danger' : 'text-dark' }}">
+                                    {{ number_format($item['stok']) }}
+                                </span>
+                            </td>
+                            <td class="text-end"><span class="text-secondary">{{ number_format($item['stok_minimum']) }}</span></td>
+                            <td>
+                                @if ($item['status'] === 'Kurang')
+                                    <span class="badge badge-subtle-danger d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Kurang (Restock)
+                                    </span>
+                                @else
+                                    <span class="badge badge-subtle-success d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-check-circle-fill"></i> Normal (Aman)
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="pe-4"><span class="text-muted small">{{ $item['lokasi'] ?? '-' }}</span></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-    @if ($barang->hasPages())
-        <nav aria-label="Page navigation" class="mt-4">
-            {{ $barang->appends(request()->query())->links('pagination::bootstrap-5') }}
-        </nav>
-    @endif
-
-    <div class="mt-3 text-muted">
-        <small>📌 <strong>Penjelasan:</strong> Stok Saat Ini = jumlah barang yang tersedia | Stok Minimum = batas terendah yang disarankan | Status Kurang = perlu pemesanan barang baru</small>
+        @if ($barang->hasPages())
+            <div class="p-3 border-top bg-light">
+                {{ $barang->appends(request()->query())->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
     </div>
 @else
-    <div class="alert alert-info" role="alert">
-        <strong>Tidak ada barang.</strong>
+    <div class="card-elevated p-5 text-center text-muted mb-4">
+        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+        <h5 class="fw-semibold text-dark">Tidak Ada Data Stok</h5>
+        <p class="small mb-0">Tidak ditemukan barang yang sesuai dengan kriteria filter yang kamu pilih.</p>
     </div>
 @endif
 @endsection
