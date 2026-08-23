@@ -135,18 +135,18 @@
                     </ul>
 
                     <div class="navbar-user-section d-flex align-items-center justify-content-between justify-content-lg-end gap-3">
-                        <div class="d-flex align-items-center gap-2 text-white">
-                            <div class="avatar-initial">
+                        <div class="user-profile-badge d-flex align-items-center gap-2">
+                            <div class="avatar-initial" style="width: 32px; height: 32px; font-size: 0.8rem;">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                             </div>
-                            <div>
+                            <div class="pe-1">
                                 <div class="fw-semibold lh-1 fs-6 text-white">{{ auth()->user()->name }}</div>
                                 <small class="text-white-50 text-capitalize fs-7">{{ auth()->user()->role }}</small>
                             </div>
                         </div>
                         <form action="{{ route('logout') }}" method="POST" class="m-0">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 rounded-2">
+                            <button type="submit" class="btn btn-logout-custom">
                                 Logout
                             </button>
                         </form>

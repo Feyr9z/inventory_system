@@ -68,10 +68,10 @@
                 </div>
 
                 <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
-                    <a href="{{ route('inventory.barang.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-1">
+                    <a href="{{ route('inventory.barang.index') }}" class="btn-app-secondary">
                         <i class="bi bi-x-lg"></i> Batal
                     </a>
-                    <button type="submit" class="btn btn-primary fw-semibold d-flex align-items-center gap-1">
+                    <button type="submit" class="btn-app-primary">
                         <i class="bi bi-check-lg"></i> Simpan Perubahan
                     </button>
                 </div>

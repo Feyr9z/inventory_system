@@ -9,7 +9,7 @@
         <p class="text-muted small mb-0">Kelola inventaris stok dan informasi barang</p>
     </div>
     @if (auth()->user()->role === 'admin')
-        <a href="{{ route('inventory.barang.create') }}" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+        <a href="{{ route('inventory.barang.create') }}" class="btn-app-primary">
             <i class="bi bi-plus-lg"></i> Tambah Barang
         </a>
     @endif
@@ -105,15 +105,15 @@
                                 </span>
                             </td>
                             <td class="text-end pe-4">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('inventory.barang.edit', $item->id) }}" class="btn btn-outline-primary" title="Edit">
+                                <div class="d-inline-flex gap-1.5">
+                                    <a href="{{ route('inventory.barang.edit', $item->id) }}" class="btn-action-edit" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     @if (auth()->user()->role === 'admin')
                                         <form action="{{ route('inventory.barang.destroy', $item->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger" title="Hapus" onclick="return confirm('Yakin ingin menghapus barang ini?')">
+                                            <button type="submit" class="btn-action-delete" title="Hapus" onclick="return confirm('Yakin ingin menghapus barang ini?')">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
