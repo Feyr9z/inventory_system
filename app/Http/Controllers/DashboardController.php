@@ -35,9 +35,20 @@ class DashboardController extends Controller
                 ->whereYear('tanggal', now()->year)
                 ->count();
         } elseif ($user->role === 'staff') {
-            $data['transaksi_bulan_ini'] = BarangMasuk::whereMonth('tanggal', now()->month)
+            $data['barang_masuk_bulan_ini'] = BarangMasuk::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
-                ->count() + BarangKeluar::whereMonth('tanggal', now()->month)
+                ->sum('jumlah');
+            $data['barang_keluar_bulan_ini'] = BarangKeluar::whereMonth('tanggal', now()->month)
+                ->whereYear('tanggal', now()->year)
+                ->sum('jumlah');
+        } elseif ($user->role === 'management') {
+            $data['barang_masuk_bulan_ini'] = BarangMasuk::whereMonth('tanggal', now()->month)
+                ->whereYear('tanggal', now()->year)
+                ->sum('jumlah');
+            $data['barang_keluar_bulan_ini'] = BarangKeluar::whereMonth('tanggal', now()->month)
+                ->whereYear('tanggal', now()->year)
+                ->sum('jumlah');
+            $data['opname_bulan_ini'] = StockOpname::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->count();
         }

@@ -7,15 +7,20 @@ use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, string $roles)
+    public function handle(Request $request, Closure $next, string ...$roles)
     {
         if (!auth()->check()) {
             return redirect(route('login'));
         }
 
-        // Parse roles - can be comma or pipe separated
-        $allowedRoles = array_filter(explode('|', str_replace(',', '|', $roles)));
-        
+        // Flatten all passed role arguments, supporting both comma and pipe separation
+        $allowedRoles = [];
+        foreach ($roles as $roleArg) {
+            foreach (array_filter(preg_split('/[,|]/', $roleArg)) as $r) {
+                $allowedRoles[] = trim($r);
+            }
+        }
+
         if (in_array(auth()->user()->role, $allowedRoles)) {
             return $next($request);
         }

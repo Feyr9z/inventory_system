@@ -121,11 +121,64 @@
             <div class="card-elevated p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Transaksi (Bln Ini)</span>
-                        <h2 class="fw-bold text-dark mb-0">{{ number_format($transaksi_bulan_ini ?? 0) }}</h2>
+                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Masuk (Bln Ini)</span>
+                        <h2 class="fw-bold text-dark mb-0">{{ number_format($barang_masuk_bulan_ini ?? 0) }}</h2>
                     </div>
                     <div class="icon-box icon-box-info">
-                        <i class="bi bi-arrow-left-right"></i>
+                        <i class="bi bi-arrow-down-left-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card-elevated p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Keluar (Bln Ini)</span>
+                        <h2 class="fw-bold text-dark mb-0">{{ number_format($barang_keluar_bulan_ini ?? 0) }}</h2>
+                    </div>
+                    <div class="icon-box icon-box-warning">
+                        <i class="bi bi-arrow-up-right-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif ($role === 'management')
+        <div class="col-lg-3 col-md-6">
+            <div class="card-elevated p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Masuk (Bln Ini)</span>
+                        <h2 class="fw-bold text-dark mb-0">{{ number_format($barang_masuk_bulan_ini ?? 0) }}</h2>
+                    </div>
+                    <div class="icon-box icon-box-info">
+                        <i class="bi bi-arrow-down-left-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card-elevated p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Keluar (Bln Ini)</span>
+                        <h2 class="fw-bold text-dark mb-0">{{ number_format($barang_keluar_bulan_ini ?? 0) }}</h2>
+                    </div>
+                    <div class="icon-box icon-box-warning">
+                        <i class="bi bi-arrow-up-right-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card-elevated p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Opname (Bln Ini)</span>
+                        <h2 class="fw-bold text-dark mb-0">{{ number_format($opname_bulan_ini ?? 0) }}</h2>
+                    </div>
+                    <div class="icon-box icon-box-purple">
+                        <i class="bi bi-clipboard-check-fill"></i>
                     </div>
                 </div>
             </div>
