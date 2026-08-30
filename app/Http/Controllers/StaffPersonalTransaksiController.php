@@ -33,11 +33,12 @@ class StaffPersonalTransaksiController extends Controller
                 ->whereDate('tanggal', '>=', $dari_tanggal)
                 ->whereDate('tanggal', '<=', $sampai_tanggal);
 
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
-                $queryMasuk->where(function ($q) use ($search) {
-                    $q->whereHas('barang', function ($b) use ($search) {
-                        $b->where('nama_barang', 'ilike', '%' . $search . '%');
-                    })->orWhere('sumber', 'ilike', '%' . $search . '%');
+                $queryMasuk->where(function ($q) use ($search, $like) {
+                    $q->whereHas('barang', function ($b) use ($search, $like) {
+                        $b->where('nama_barang', $like, '%' . $search . '%');
+                    })->orWhere('sumber', $like, '%' . $search . '%');
                 });
             }
 
@@ -75,11 +76,12 @@ class StaffPersonalTransaksiController extends Controller
                 ->whereDate('tanggal', '>=', $dari_tanggal)
                 ->whereDate('tanggal', '<=', $sampai_tanggal);
 
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
-                $queryKeluar->where(function ($q) use ($search) {
-                    $q->whereHas('barang', function ($b) use ($search) {
-                        $b->where('nama_barang', 'ilike', '%' . $search . '%');
-                    })->orWhere('tujuan', 'ilike', '%' . $search . '%');
+                $queryKeluar->where(function ($q) use ($search, $like) {
+                    $q->whereHas('barang', function ($b) use ($search, $like) {
+                        $b->where('nama_barang', $like, '%' . $search . '%');
+                    })->orWhere('tujuan', $like, '%' . $search . '%');
                 });
             }
 

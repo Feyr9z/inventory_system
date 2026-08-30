@@ -28,15 +28,17 @@ class LaporanController extends Controller
 
         if ($tipe_transaksi === 'masuk' || $tipe_transaksi === 'semua') {
             $queryMasuk = BarangMasuk::with(['barang.kategori', 'user'])
-                ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal]);
+                ->whereDate('tanggal', '>=', $dari_tanggal)
+                ->whereDate('tanggal', '<=', $sampai_tanggal);
 
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
-                $queryMasuk->where(function ($q) use ($search) {
-                    $q->whereHas('barang', function ($b) use ($search) {
-                        $b->where('nama_barang', 'ilike', '%' . $search . '%');
-                    })->orWhere('sumber', 'ilike', '%' . $search . '%')
-                      ->orWhereHas('user', function ($u) use ($search) {
-                        $u->where('name', 'ilike', '%' . $search . '%');
+                $queryMasuk->where(function ($q) use ($search, $like) {
+                    $q->whereHas('barang', function ($b) use ($search, $like) {
+                        $b->where('nama_barang', $like, '%' . $search . '%');
+                    })->orWhere('sumber', $like, '%' . $search . '%')
+                      ->orWhereHas('user', function ($u) use ($search, $like) {
+                        $u->where('name', $like, '%' . $search . '%');
                     });
                 });
             }
@@ -70,15 +72,17 @@ class LaporanController extends Controller
 
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
             $queryKeluar = BarangKeluar::with(['barang.kategori', 'user', 'details.barangMasuk'])
-                ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal]);
+                ->whereDate('tanggal', '>=', $dari_tanggal)
+                ->whereDate('tanggal', '<=', $sampai_tanggal);
 
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
-                $queryKeluar->where(function ($q) use ($search) {
-                    $q->whereHas('barang', function ($b) use ($search) {
-                        $b->where('nama_barang', 'ilike', '%' . $search . '%');
-                    })->orWhere('tujuan', 'ilike', '%' . $search . '%')
-                      ->orWhereHas('user', function ($u) use ($search) {
-                        $u->where('name', 'ilike', '%' . $search . '%');
+                $queryKeluar->where(function ($q) use ($search, $like) {
+                    $q->whereHas('barang', function ($b) use ($search, $like) {
+                        $b->where('nama_barang', $like, '%' . $search . '%');
+                    })->orWhere('tujuan', $like, '%' . $search . '%')
+                      ->orWhereHas('user', function ($u) use ($search, $like) {
+                        $u->where('name', $like, '%' . $search . '%');
                     });
                 });
             }
@@ -165,9 +169,10 @@ class LaporanController extends Controller
         }]);
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_barang', 'ilike', '%' . $search . '%')
-                  ->orWhere('lokasi', 'ilike', '%' . $search . '%');
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $like) {
+                $q->where('nama_barang', $like, '%' . $search . '%')
+                  ->orWhere('lokasi', $like, '%' . $search . '%');
             });
         }
 
@@ -211,15 +216,17 @@ class LaporanController extends Controller
 
         if ($tipe_transaksi === 'masuk' || $tipe_transaksi === 'semua') {
             $queryMasuk = BarangMasuk::with(['barang', 'user'])
-                ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal]);
+                ->whereDate('tanggal', '>=', $dari_tanggal)
+                ->whereDate('tanggal', '<=', $sampai_tanggal);
 
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
-                $queryMasuk->where(function ($q) use ($search) {
-                    $q->whereHas('barang', function ($b) use ($search) {
-                        $b->where('nama_barang', 'ilike', '%' . $search . '%');
-                    })->orWhere('sumber', 'ilike', '%' . $search . '%')
-                      ->orWhereHas('user', function ($u) use ($search) {
-                        $u->where('name', 'ilike', '%' . $search . '%');
+                $queryMasuk->where(function ($q) use ($search, $like) {
+                    $q->whereHas('barang', function ($b) use ($search, $like) {
+                        $b->where('nama_barang', $like, '%' . $search . '%');
+                    })->orWhere('sumber', $like, '%' . $search . '%')
+                      ->orWhereHas('user', function ($u) use ($search, $like) {
+                        $u->where('name', $like, '%' . $search . '%');
                     });
                 });
             }
@@ -241,15 +248,17 @@ class LaporanController extends Controller
 
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
             $queryKeluar = BarangKeluar::with(['barang', 'user', 'details.barangMasuk'])
-                ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal]);
+                ->whereDate('tanggal', '>=', $dari_tanggal)
+                ->whereDate('tanggal', '<=', $sampai_tanggal);
 
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
-                $queryKeluar->where(function ($q) use ($search) {
-                    $q->whereHas('barang', function ($b) use ($search) {
-                        $b->where('nama_barang', 'ilike', '%' . $search . '%');
-                    })->orWhere('tujuan', 'ilike', '%' . $search . '%')
-                      ->orWhereHas('user', function ($u) use ($search) {
-                        $u->where('name', 'ilike', '%' . $search . '%');
+                $queryKeluar->where(function ($q) use ($search, $like) {
+                    $q->whereHas('barang', function ($b) use ($search, $like) {
+                        $b->where('nama_barang', $like, '%' . $search . '%');
+                    })->orWhere('tujuan', $like, '%' . $search . '%')
+                      ->orWhereHas('user', function ($u) use ($search, $like) {
+                        $u->where('name', $like, '%' . $search . '%');
                     });
                 });
             }
@@ -323,9 +332,10 @@ class LaporanController extends Controller
         $query = Barang::with('kategori');
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_barang', 'ilike', '%' . $search . '%')
-                  ->orWhere('lokasi', 'ilike', '%' . $search . '%');
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $like) {
+                $q->where('nama_barang', $like, '%' . $search . '%')
+                  ->orWhere('lokasi', $like, '%' . $search . '%');
             });
         }
 

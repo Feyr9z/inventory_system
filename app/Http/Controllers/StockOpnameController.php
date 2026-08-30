@@ -61,8 +61,9 @@ class StockOpnameController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->whereHas('barang', function ($b) use ($search) {
-                $b->where('nama_barang', 'ilike', '%' . $search . '%');
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->whereHas('barang', function ($b) use ($search, $like) {
+                $b->where('nama_barang', $like, '%' . $search . '%');
             });
         }
 

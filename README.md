@@ -1,6 +1,6 @@
 # PT Atha Anakhatulistiwa - Inventory Management System
 
-Sistem Informasi Manajemen Inventoris berbasis web yang dirancang untuk mengelola persediaan barang fisik, alokasi pengeluaran metode **FIFO (First In First Out)**, audit stock opname, serta monitoring transaksi terstruktur untuk PT Atha Anakhatulistiwa.
+Sistem Informasi Manajemen Inventoris berbasis web yang dirancang untuk mengelola persediaan barang fisik, alokasi pengeluaran metode **FIFO (First In First Out)**, audit stock opname, dokumen bukti transaksi logistik non-finansial, serta monitoring transaksi terstruktur untuk PT Atha Anakhatulistiwa.
 
 ---
 
@@ -13,8 +13,19 @@ Sistem Informasi Manajemen Inventoris berbasis web yang dirancang untuk mengelol
   - Penanganan race condition dengan database transaction dan pessimistic row-level locking (`lockForUpdate()`).
 - **Dashboard Multirole**:
   - Ringkasan analitik real-time: total barang, total unit, peringatan stok minimum, mutasi masuk/keluar/opname bulanan disesuaikan menurut peran pengguna.
-- **Manajemen Master Data**:
-  - Pengelolaan data barang, detail lot pool FIFO, dan kategori dengan pembagian wewenang yang ketat.
+- **Enhanced Filtering, Sorting & Default Terbaru**:
+  - Seluruh tabel (Master Barang, Laporan Transaksi, Posisi Stok, History Opname, Log Aktivitas, User) secara default menampilkan data **terbaru di atas**.
+  - Form pencarian kata kunci multi-kolom, filter kategori, filter status stok (*Normal/Kurang*), filter status selisih audit (*Surplus/Defisit/Sesuai*), dan sorting multi-kriteria dengan tombol reset filter dinamis.
+- **Dokumen Bukti Transaksi & Struk Logistik Non-Finansial (Print-Ready)**:
+  - **Surat Bukti Penerimaan Barang** (`IN-YYYYMMDD-XXXX`): Nomor referensi dokumen resmi, petugas penerima, vendor asal, kuantitas unit, dan identitas Lot FIFO.
+  - **Surat Jalan / Bukti Pengeluaran Barang** (`OUT-YYYYMMDD-XXXX`): Nomor referensi dokumen, penerima/tujuan, petugas pengeluar, dan **tabel rincian alokasi lot FIFO yang dikonsumsi**.
+  - **Berita Acara Stock Opname Fisik** (`OPN-YYYYMMDD-XXXX`): Dokumen rekonsiliasi audit fisik vs sistem, catatan selisih unit, dan penjelasan otomatis tindakan rekonsiliasi lot.
+  - Desain modal slip dokumen logistik profesional dengan optimasi `@media print` untuk pencetakan dokumen fisik.
+- **Fitur "Transaksi Saya" Khusus Staff**:
+  - Menu navigasi khusus staf gudang untuk melihat riwayat aktivitas operasional personal per user (`user_id = Auth::id()`).
+  - Dilengkapi statistik personal (Total Transaksi, Total Masuk, Total Keluar), filter interaktif, dan akses cepat cetak bukti transaksi personal.
+- **Manajemen Master Data & Kategori**:
+  - Pengelolaan data barang, detail lot pool FIFO aktif, riwayat konsumsi, dan kategori dengan pembagian wewenang ketat.
 - **Transaksi Stok & Audit**:
   - **Barang Masuk**: Pencatatan unit baru, inisialisasi lot sisa, dan atribusi pengguna.
   - **Barang Keluar**: Alokasi otomatis FIFO dengan validasi ketersediaan lot dan stok.
@@ -42,9 +53,11 @@ Sistem Informasi Manajemen Inventoris berbasis web yang dirancang untuk mengelol
 | **Kelola Pengguna (User)** | Ya | Tidak | Tidak | Tidak |
 | **Input Barang Masuk** | Ya | Tidak | Ya | Tidak |
 | **Input Barang Keluar (FIFO)** | Ya | Tidak | Ya | Tidak |
+| **Transaksi Saya (Personal)** | Ya | Tidak | Ya | Tidak |
 | **Input Stock Opname** | Ya | Ya | Tidak | Tidak |
 | **Riwayat & Audit Opname** | Ya | Ya | Tidak | Ya |
 | **Laporan Transaksi & Stok** | Ya | Ya | Tidak | Ya |
+| **Lihat & Cetak Bukti/Struk** | Ya | Ya | Ya (Personal) | Ya |
 | **Ekspor CSV** | Ya | Ya | Tidak | Ya |
 | **Log Aktivitas** | Ya | Ya | Tidak | Ya |
 
@@ -119,6 +132,7 @@ Akses melalui browser di: `http://127.0.0.1:8000`
 ```bash
 php artisan test
 ```
+*Status: 30 Tests, 147 Assertions — 100% Passed.*
 
 ---
 

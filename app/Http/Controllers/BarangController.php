@@ -15,9 +15,10 @@ class BarangController extends Controller
         // Search by nama_barang atau lokasi
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_barang', 'ilike', '%' . $search . '%')
-                  ->orWhere('lokasi', 'ilike', '%' . $search . '%');
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $like) {
+                $q->where('nama_barang', $like, '%' . $search . '%')
+                  ->orWhere('lokasi', $like, '%' . $search . '%');
             });
         }
 

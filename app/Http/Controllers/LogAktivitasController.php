@@ -23,7 +23,8 @@ class LogAktivitasController extends Controller
         }
 
         if ($search) {
-            $query->where('aktivitas', 'ilike', '%' . $search . '%');
+            $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where('aktivitas', $like, '%' . $search . '%');
         }
 
         if ($sort === 'terlama') {
