@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
-use App\Models\BarangKeluar;
+use App\Services\FifoService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 
 class BarangKeluarController extends Controller
 {
+    public function __construct(
+        protected FifoService $fifoService
+    ) {}
+
     public function create()
     {
         $barang = Barang::all();
@@ -24,26 +29,16 @@ class BarangKeluarController extends Controller
             "tujuan"    => "required|string|max:255",
         ]);
 
-        // Pre-check stok sebelum masuk transaksi (untuk error response yang bersih)
-        $barang = Barang::findOrFail($validated["barang_id"]);
-        if ($validated["jumlah"] > $barang->stok) {
+        try {
+            $this->fifoService->processBarangKeluar($validated, Auth::id());
+        } catch (InvalidArgumentException $e) {
             return back()
-                ->withErrors(["jumlah" => "Stok tidak cukup. Stok tersedia: {$barang->stok}"])
+                ->withErrors(["jumlah" => $e->getMessage()])
                 ->withInput();
         }
 
-        DB::transaction(function () use ($validated) {
-            $barang = Barang::findOrFail($validated["barang_id"]);
-
-            // Kurangi stok agregat
-            $barang->stok -= $validated["jumlah"];
-            $barang->save();
-
-            BarangKeluar::create($validated);
-        });
-
         return redirect()
             ->route("inventory.transaksi.keluar.create")
-            ->with("success", "Barang keluar berhasil dicatat");
+            ->with("success", "Barang keluar berhasil dicatat dengan alokasi FIFO");
     }
 }

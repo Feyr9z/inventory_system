@@ -18,9 +18,26 @@ class BarangSeeder extends Seeder
         $struktur = Kategori::where('nama_kategori', 'Struktur & Frame')->first();
         $hardware = Kategori::where('nama_kategori', 'Hardware & Perlengkapan')->first();
         $supplies = Kategori::where('nama_kategori', 'Supplies & Material')->first();
+        $admin = \App\Models\User::where('email', 'admin@inventory.test')->first();
+        $adminId = $admin?->id;
+
+        $createBarangWithLot = function (array $attributes) use ($adminId) {
+            $barang = Barang::create($attributes);
+            if ($barang->stok > 0) {
+                \App\Models\BarangMasuk::create([
+                    'barang_id'   => $barang->id,
+                    'user_id'     => $adminId,
+                    'tanggal'     => now()->subDays(10)->toDateString(),
+                    'jumlah'      => $barang->stok,
+                    'sisa_jumlah' => $barang->stok,
+                    'sumber'      => 'Saldo Awal Sistem',
+                ]);
+            }
+            return $barang;
+        };
 
         // === BAHAN BILLBOARD ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Printing Billboard 3x12m',
             'kategori_id' => $billboard->id,
             'stok' => 8,
@@ -28,7 +45,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Utama',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Vinyl Glossy 440gsm',
             'kategori_id' => $billboard->id,
             'stok' => 50,
@@ -36,7 +53,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Utama',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Mesh Laminating Film',
             'kategori_id' => $billboard->id,
             'stok' => 30,
@@ -45,7 +62,7 @@ class BarangSeeder extends Seeder
         ]);
 
         // === SPANDUK & BANNER ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Spanduk Flexi 2x10m',
             'kategori_id' => $spanduk->id,
             'stok' => 25,
@@ -53,7 +70,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Utama',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Banner Katun 2x3m',
             'kategori_id' => $spanduk->id,
             'stok' => 40,
@@ -61,7 +78,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak B1',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Kain Backdrop Event',
             'kategori_id' => $spanduk->id,
             'stok' => 35,
@@ -69,7 +86,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak B2',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Vinyl Sticker Roll',
             'kategori_id' => $spanduk->id,
             'stok' => 60,
@@ -78,7 +95,7 @@ class BarangSeeder extends Seeder
         ]);
 
         // === BALIHO ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Baliho Aluminium Frame 4x6m',
             'kategori_id' => $baliho->id,
             'stok' => 5,
@@ -86,7 +103,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Utama',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Printing Baliho 4x6m',
             'kategori_id' => $baliho->id,
             'stok' => 12,
@@ -94,7 +111,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Utama',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Plywood Baliho Backing',
             'kategori_id' => $baliho->id,
             'stok' => 45,
@@ -103,7 +120,7 @@ class BarangSeeder extends Seeder
         ]);
 
         // === VERTICAL BANNER ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Vertical Banner Stand 2m',
             'kategori_id' => $vertical->id,
             'stok' => 20,
@@ -111,7 +128,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak C1',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Printing Vertical Banner 0.6x2m',
             'kategori_id' => $vertical->id,
             'stok' => 50,
@@ -119,7 +136,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak C2',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Roll-up Banner Canvas',
             'kategori_id' => $vertical->id,
             'stok' => 30,
@@ -127,7 +144,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak C3',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'X-Banner Stand Premium',
             'kategori_id' => $vertical->id,
             'stok' => 15,
@@ -136,7 +153,7 @@ class BarangSeeder extends Seeder
         ]);
 
         // === EVENT TOOLBOX ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Tent Event 4x4m',
             'kategori_id' => $event->id,
             'stok' => 8,
@@ -144,7 +161,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Event',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Kursi Lipat Aluminum',
             'kategori_id' => $event->id,
             'stok' => 100,
@@ -152,7 +169,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Event',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Meja Event Lipat',
             'kategori_id' => $event->id,
             'stok' => 50,
@@ -160,7 +177,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Event',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Lampu Staging LED',
             'kategori_id' => $event->id,
             'stok' => 30,
@@ -168,7 +185,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Event',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Sound System Portable',
             'kategori_id' => $event->id,
             'stok' => 12,
@@ -176,7 +193,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Event',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Projection Screen 5x3m',
             'kategori_id' => $event->id,
             'stok' => 6,
@@ -185,7 +202,7 @@ class BarangSeeder extends Seeder
         ]);
 
         // === STRUKTUR & FRAME ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Profil Aluminium 40x40mm',
             'kategori_id' => $struktur->id,
             'stok' => 200,
@@ -193,7 +210,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Material',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Besi Galvanis UNP 100',
             'kategori_id' => $struktur->id,
             'stok' => 150,
@@ -201,7 +218,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Material',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Kayu Meranti 5cm x 10cm',
             'kategori_id' => $struktur->id,
             'stok' => 300,
@@ -209,7 +226,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Material',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'PVC Pipe 4 Inch',
             'kategori_id' => $struktur->id,
             'stok' => 80,
@@ -218,7 +235,7 @@ class BarangSeeder extends Seeder
         ]);
 
         // === HARDWARE & PERLENGKAPAN ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Baut & Mur Set',
             'kategori_id' => $hardware->id,
             'stok' => 500,
@@ -226,7 +243,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Hardware 1',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Double Tape 50mm x 50m',
             'kategori_id' => $hardware->id,
             'stok' => 200,
@@ -234,7 +251,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Hardware 2',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Kawat Stainless 2mm',
             'kategori_id' => $hardware->id,
             'stok' => 100,
@@ -242,7 +259,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Hardware 3',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Chain Hook & Hanging System',
             'kategori_id' => $hardware->id,
             'stok' => 150,
@@ -250,7 +267,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Hardware 4',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Velcro Industrial Strength',
             'kategori_id' => $hardware->id,
             'stok' => 250,
@@ -259,7 +276,7 @@ class BarangSeeder extends Seeder
         ]);
 
         // === SUPPLIES & MATERIAL ===
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Cat Primer White 5L',
             'kategori_id' => $supplies->id,
             'stok' => 40,
@@ -267,7 +284,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Chemical',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Solvent Ink Cyan 1L',
             'kategori_id' => $supplies->id,
             'stok' => 20,
@@ -275,7 +292,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Gudang Chemical',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Adhesive Foam 2mm',
             'kategori_id' => $supplies->id,
             'stok' => 80,
@@ -283,7 +300,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Supply 1',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Laminating Pouch A4',
             'kategori_id' => $supplies->id,
             'stok' => 500,
@@ -291,7 +308,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Supply 2',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Tissue Putih Roll 100m',
             'kategori_id' => $supplies->id,
             'stok' => 60,
@@ -299,7 +316,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Supply 3',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Masking Tape 24mm x 50m',
             'kategori_id' => $supplies->id,
             'stok' => 120,
@@ -307,7 +324,7 @@ class BarangSeeder extends Seeder
             'lokasi' => 'Rak Supply 4',
         ]);
 
-        Barang::create([
+        $createBarangWithLot([
             'nama_barang' => 'Bubble Wrap Roll 50cm',
             'kategori_id' => $supplies->id,
             'stok' => 100,

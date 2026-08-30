@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\StockOpname;
+use App\Services\FifoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class StockOpnameController extends Controller
 {
+    public function __construct(
+        protected FifoService $fifoService
+    ) {}
+
     public function create()
     {
         $barang = Barang::all();
@@ -24,16 +30,21 @@ class StockOpnameController extends Controller
         ]);
 
         DB::transaction(function () use ($validated) {
-            $barang  = Barang::findOrFail($validated["barang_id"]);
-            $selisih = $validated["stok_fisik"] - $barang->stok;
+            $barang = Barang::findOrFail($validated["barang_id"]);
+            $stokFisik = (int) $validated["stok_fisik"];
 
-            // Override stok agregat
-            $barang->stok = $validated["stok_fisik"];
-            $barang->save();
+            // 1. Rekonsiliasi lot FIFO dan update stok agregat (PRD §7)
+            $selisih = $this->fifoService->adjustLotsForStockOpname(
+                $barang,
+                $stokFisik,
+                $validated["tanggal"],
+                Auth::id()
+            );
 
+            // 2. Simpan catatan riwayat audit Stock Opname
             StockOpname::create([
                 "barang_id"  => $validated["barang_id"],
-                "stok_fisik" => $validated["stok_fisik"],
+                "stok_fisik" => $stokFisik,
                 "selisih"    => $selisih,
                 "tanggal"    => $validated["tanggal"],
             ]);
@@ -41,7 +52,7 @@ class StockOpnameController extends Controller
 
         return redirect()
             ->route("inventory.transaksi.opname.create")
-            ->with("success", "Stock opname berhasil dicatat");
+            ->with("success", "Stock opname berhasil dicatat dan lot FIFO telah diselaraskan");
     }
 
     public function history(Request $request)
