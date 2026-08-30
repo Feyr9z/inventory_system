@@ -6,12 +6,33 @@ use Illuminate\Database\Eloquent\Model;
 
 class BarangKeluar extends Model
 {
-    protected $table = "barang_keluar";
+    protected $table = 'barang_keluar';
 
-    protected $fillable = ["barang_id", "tanggal", "jumlah", "tujuan"];
+    protected $fillable = [
+        'barang_id',
+        'user_id',
+        'tanggal',
+        'jumlah',
+        'tujuan',
+    ];
+
+    protected $casts = [
+        'jumlah'  => 'integer',
+        'tanggal' => 'date',
+    ];
 
     public function barang()
     {
         return $this->belongsTo(Barang::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function details()
+    {
+        return $this->hasMany(BarangKeluarDetail::class, 'barang_keluar_id');
     }
 }

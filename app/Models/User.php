@@ -23,6 +23,16 @@ class User extends Authenticatable
         return $this->hasMany(LogAktivitas::class);
     }
 
+    public function barangMasuk()
+    {
+        return $this->hasMany(BarangMasuk::class);
+    }
+
+    public function barangKeluar()
+    {
+        return $this->hasMany(BarangKeluar::class);
+    }
+
     /**
      * Casting attribute
      */
