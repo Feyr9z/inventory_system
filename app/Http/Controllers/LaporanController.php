@@ -383,4 +383,28 @@ class LaporanController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
+
+    /**
+     * Tampilan cetak resmi dokumen Surat Bukti Penerimaan Barang Masuk.
+     */
+    public function printMasukReceipt($id)
+    {
+        $masuk = BarangMasuk::with(['barang.kategori', 'user'])->findOrFail($id);
+
+        $docNumber = 'IN-' . $masuk->tanggal->format('Ymd') . '-' . str_pad($masuk->id, 4, '0', STR_PAD_LEFT);
+
+        return view('receipts.masuk', compact('masuk', 'docNumber'));
+    }
+
+    /**
+     * Tampilan cetak resmi dokumen Surat Jalan / Bukti Pengeluaran Barang Keluar.
+     */
+    public function printKeluarReceipt($id)
+    {
+        $keluar = BarangKeluar::with(['barang.kategori', 'user', 'details.barangMasuk'])->findOrFail($id);
+
+        $docNumber = 'OUT-' . $keluar->tanggal->format('Ymd') . '-' . str_pad($keluar->id, 4, '0', STR_PAD_LEFT);
+
+        return view('receipts.keluar', compact('keluar', 'docNumber'));
+    }
 }

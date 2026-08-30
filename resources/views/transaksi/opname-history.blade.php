@@ -6,7 +6,7 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
     <div>
         <h3 class="fw-bold text-dark mb-1">History Stock Opname</h3>
-        <p class="text-muted small mb-0">Riwayat hasil perhitungan fisik stok dan audit penyesuaian inventaris</p>
+        <p class="text-muted small mb-0">Riwayat audit perhitungan fisik, rekonsiliasi selisih stok, dan berita acara inventaris</p>
     </div>
     @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
         <a href="{{ route('inventory.transaksi.opname.create') }}" class="btn-app-primary d-inline-flex align-items-center gap-2 fw-semibold">
@@ -59,15 +59,17 @@
     </form>
 </div>
 
+<!-- Table Card -->
 <div class="card-elevated overflow-hidden mb-4">
     @if ($opname->count() > 0)
         <div class="table-responsive">
-            <table class="table table-custom align-middle">
+            <table class="table table-custom align-middle mb-0">
                 <thead>
                     <tr>
                         <th class="ps-4">No. Dokumen & Tanggal</th>
-                        <th>Nama Barang</th>
+                        <th>Nama Barang & Kategori</th>
                         <th class="text-end">Stok Fisik</th>
+                        <th class="text-end">Stok Sebelum</th>
                         <th class="text-end">Selisih Unit</th>
                         <th>Status Audit</th>
                         <th class="text-end pe-4">Dokumen</th>
@@ -81,17 +83,22 @@
                         @endphp
                         <tr>
                             <td class="ps-4">
-                                <span class="font-monospace fw-bold text-dark d-block" style="font-size: 0.8rem;">{{ $docNumber }}</span>
-                                <small class="text-muted">{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</small>
+                                <span class="font-monospace fw-bold text-dark d-block" style="font-size: 0.825rem;">{{ $docNumber }}</span>
+                                <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</small>
                             </td>
                             <td>
                                 <span class="fw-bold text-dark d-block">{{ $item->barang->nama_barang }}</span>
-                                <small class="text-muted">{{ $item->barang->kategori?->nama_kategori ?? '-' }}</small>
+                                <span class="badge badge-subtle-secondary small mt-0.5"><i class="bi bi-tag me-1"></i>{{ $item->barang->kategori?->nama_kategori ?? '-' }}</span>
                             </td>
-                            <td class="text-end"><span class="fw-bold text-dark">{{ number_format($item->stok_fisik) }}</span></td>
                             <td class="text-end">
-                                <span class="fw-bold {{ $item->selisih > 0 ? 'text-success' : ($item->selisih < 0 ? 'text-danger' : 'text-secondary') }}">
-                                    {{ $item->selisih > 0 ? '+' : '' }}{{ $item->selisih }}
+                                <span class="fw-bold text-dark fs-6">{{ number_format($item->stok_fisik) }}</span> <small class="text-muted">Unit</small>
+                            </td>
+                            <td class="text-end">
+                                <span class="text-muted fw-semibold">{{ number_format($stokSistem) }}</span> <small class="text-muted">Unit</small>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold fs-6 {{ $item->selisih > 0 ? 'text-success' : ($item->selisih < 0 ? 'text-danger' : 'text-secondary') }}">
+                                    {{ $item->selisih > 0 ? '+' : '' }}{{ number_format($item->selisih) }}
                                 </span>
                             </td>
                             <td>
@@ -105,7 +112,7 @@
                                     </span>
                                 @else
                                     <span class="badge badge-subtle-secondary d-inline-flex align-items-center gap-1">
-                                        <i class="bi bi-check-circle-fill"></i> Sesuai
+                                        <i class="bi bi-check-circle-fill"></i> Sesuai (0)
                                     </span>
                                 @endif
                             </td>
@@ -115,131 +122,6 @@
                                 </button>
                             </td>
                         </tr>
-
-                        <!-- Modal Berita Acara Stock Opname -->
-                        <div class="modal fade" id="opnameReceipt-{{ $idx }}" tabindex="-1" aria-labelledby="opnameLabel-{{ $idx }}" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                                    <div class="modal-body p-4 p-md-5">
-                                        <div class="receipt-card">
-                                            <!-- Header Berita Acara -->
-                                            <div class="receipt-header d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-                                                <div>
-                                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                                        <div class="bg-dark text-white rounded p-1 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
-                                                            <i class="bi bi-clipboard2-check-fill fs-6"></i>
-                                                        </div>
-                                                        <span class="fw-bold text-dark fs-5 tracking-tight">PT ATHA ANAKHATULISTIWA</span>
-                                                    </div>
-                                                    <small class="text-muted text-uppercase fw-semibold d-block">
-                                                        Berita Acara Rekonsiliasi & Stock Opname Fisik
-                                                    </small>
-                                                </div>
-                                                <div class="text-sm-end">
-                                                    <span class="receipt-doc-badge d-inline-block mb-1">{{ $docNumber }}</span>
-                                                    <div class="small text-muted">Tanggal Audit: <strong>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</strong></div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Metadata Audit -->
-                                            <div class="row g-3 mb-4 bg-light p-3 rounded-3 border">
-                                                <div class="col-sm-6">
-                                                    <div class="small text-muted fw-semibold text-uppercase">Barang Yang Diaudit</div>
-                                                    <div class="fw-bold text-dark fs-6">{{ $item->barang->nama_barang }}</div>
-                                                    <small class="text-muted">Kategori: {{ $item->barang->kategori?->nama_kategori ?? '-' }}</small>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <div class="small text-muted fw-semibold text-uppercase">Lokasi Fisik</div>
-                                                    <div class="fw-bold text-dark">{{ $item->barang->lokasi ?? 'Gudang Utama' }}</div>
-                                                    <small class="text-muted">Audit ID: #{{ $item->id }}</small>
-                                                </div>
-                                            </div>
-
-                                            <!-- Tabel Rekonsiliasi -->
-                                            <div class="table-responsive mb-4">
-                                                <table class="table receipt-table align-middle">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Parameter Audit</th>
-                                                            <th class="text-end">Jumlah Unit</th>
-                                                            <th>Keterangan Rekonsiliasi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Stok Sebelum Opname (Sistem)</td>
-                                                            <td class="text-end fw-semibold text-secondary">{{ number_format($stokSistem) }} Unit</td>
-                                                            <td class="text-muted small">Catatan sistem sebelum audit</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><strong>Hasil Perhitungan Fisik Riil</strong></td>
-                                                            <td class="text-end fw-bold text-dark fs-6">{{ number_format($item->stok_fisik) }} Unit</td>
-                                                            <td><span class="badge badge-subtle-primary">Hasil Audit Aktual</span></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><strong>Selisih (Discrepancy)</strong></td>
-                                                            <td class="text-end fw-bold fs-6 {{ $item->selisih > 0 ? 'text-success' : ($item->selisih < 0 ? 'text-danger' : 'text-secondary') }}">
-                                                                {{ $item->selisih > 0 ? '+' : '' }}{{ number_format($item->selisih) }} Unit
-                                                            </td>
-                                                            <td>
-                                                                @if ($item->selisih > 0)
-                                                                    <span class="text-success small fw-semibold"><i class="bi bi-arrow-up-circle me-1"></i>Surplus Stok Fisik</span>
-                                                                @elseif ($item->selisih < 0)
-                                                                    <span class="text-danger small fw-semibold"><i class="bi bi-arrow-down-circle me-1"></i>Defisit Stok Fisik</span>
-                                                                @else
-                                                                    <span class="text-secondary small fw-semibold"><i class="bi bi-check-circle me-1"></i>Stok 100% Sesuai</span>
-                                                                @endif
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-
-                                            <!-- Status Lot Reconciliation Info -->
-                                            <div class="mb-4 p-3 bg-light rounded-3 border">
-                                                <h6 class="fw-bold text-dark mb-1 small text-uppercase">
-                                                    <i class="bi bi-info-circle text-primary me-1"></i> Rekonsiliasi Lot FIFO Terkait:
-                                                </h6>
-                                                <p class="mb-0 small text-secondary">
-                                                    @if ($item->selisih > 0)
-                                                        Sistem otomatis menginisialisasi <strong>Lot Masuk Penyesuaian Opname</strong> sebanyak <strong>{{ $item->selisih }} unit</strong> pada tanggal audit agar FIFO lot pool tetap sinkron.
-                                                    @elseif ($item->selisih < 0)
-                                                        Sistem otomatis memotong saldo <strong>{{ abs($item->selisih) }} unit</strong> dari <strong>Lot FIFO Aktif Tertua</strong> yang masih memiliki saldo untuk menjaga konsistensi alokasi.
-                                                    @else
-                                                        Tidak ada penyesuaian lot yang diperlukan karena stok fisik identik dengan stok pada sistem inventaris.
-                                                    @endif
-                                                </p>
-                                            </div>
-
-                                            <!-- Kolom Verifikasi / Tanda Tangan -->
-                                            <div class="row g-4 pt-3">
-                                                <div class="col-6">
-                                                    <div class="receipt-signature-box">
-                                                        <div class="fw-bold text-dark">Petugas Auditor Fisik</div>
-                                                        <div class="text-muted small">Pelaksana Perhitungan Fisik</div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="receipt-signature-box">
-                                                        <div class="fw-bold text-dark">Kepala Gudang / Supervisor</div>
-                                                        <div class="text-muted small">Verifikasi & Otorisasi Audit</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top d-print-none">
-                                            <button type="button" class="btn btn-app-secondary" data-bs-dismiss="modal">
-                                                <i class="bi bi-x-lg"></i> Tutup
-                                            </button>
-                                            <button type="button" class="btn btn-app-primary" onclick="window.print()">
-                                                <i class="bi bi-printer"></i> Cetak Berita Acara
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     @endforeach
                 </tbody>
             </table>
@@ -252,29 +134,148 @@
         @endif
     @else
         <div class="p-5 text-center text-muted">
-            <i class="bi bi-journal-text fs-1 d-block mb-2 text-secondary"></i>
+            <i class="bi bi-clipboard-x fs-1 d-block mb-2 text-secondary"></i>
             <h5 class="fw-semibold text-dark">Belum Ada Riwayat Stock Opname</h5>
-            <p class="small mb-3">Lakukan penyesuaian stok fisik barang terlebih dahulu.</p>
+            <p class="small mb-3">Lakukan stock opname fisik untuk menyelaraskan catatan sistem dengan stok aktual di gudang.</p>
             @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
-                <a href="{{ route('inventory.transaksi.opname.create') }}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-clipboard-check me-1"></i> Stock Opname Baru
+                <a href="{{ route('inventory.transaksi.opname.create') }}" class="btn-app-primary">
+                    <i class="bi bi-clipboard-check me-1"></i> Mulai Stock Opname Baru
                 </a>
             @endif
         </div>
     @endif
 </div>
 
-<div class="alert alert-custom bg-light border p-3">
-    <div class="d-flex align-items-start gap-2 text-secondary small">
-        <i class="bi bi-info-circle-fill text-primary fs-6 mt-1"></i>
-        <div>
-            <strong>Keterangan Audit Opname:</strong>
-            <ul class="mb-0 ps-3 mt-1">
-                <li><strong>Surplus (+)</strong>: Barang di gudang fisik lebih banyak dibanding catatan database.</li>
-                <li><strong>Defisit (-)</strong>: Barang di gudang fisik berkurang (rusak/hilang) dibanding catatan database.</li>
-                <li><strong>Sesuai (=)</strong>: Jumlah barang fisik akurat 100% sesuai sistem.</li>
-            </ul>
+<!-- Modals Berita Acara Di Luar Elemen Table -->
+@if ($opname->count() > 0)
+    @foreach ($opname as $idx => $item)
+        @php
+            $docNumber = 'OPN-' . \Carbon\Carbon::parse($item->tanggal)->format('Ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT);
+            $stokSistem = $item->stok_fisik - $item->selisih;
+        @endphp
+        <div class="modal fade" id="opnameReceipt-{{ $idx }}" tabindex="-1" aria-labelledby="opnameLabel-{{ $idx }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="modal-body p-4 p-md-5">
+                        <div class="receipt-card">
+                            <!-- Header Berita Acara -->
+                            <div class="receipt-header d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 pb-3 border-bottom border-2 border-dark mb-4">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <div class="bg-dark text-white rounded p-1 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                                            <i class="bi bi-clipboard2-check-fill fs-6"></i>
+                                        </div>
+                                        <span class="fw-bold text-dark fs-5 tracking-tight">PT ATHA ANAKHATULISTIWA</span>
+                                    </div>
+                                    <small class="text-muted text-uppercase fw-semibold d-block">
+                                        Berita Acara Rekonsiliasi & Stock Opname Fisik
+                                    </small>
+                                </div>
+                                <div class="text-sm-end">
+                                    <span class="receipt-doc-badge d-inline-block mb-1">{{ $docNumber }}</span>
+                                    <div class="small text-muted">Tanggal Audit: <strong>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</strong></div>
+                                </div>
+                            </div>
+
+                            <!-- Metadata Audit -->
+                            <div class="row g-3 mb-4 bg-light p-3 rounded-3 border">
+                                <div class="col-sm-6">
+                                    <div class="small text-muted fw-semibold text-uppercase">Barang Yang Diaudit</div>
+                                    <div class="fw-bold text-dark fs-6">{{ $item->barang->nama_barang }}</div>
+                                    <small class="text-muted">Kategori: {{ $item->barang->kategori?->nama_kategori ?? '-' }}</small>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="small text-muted fw-semibold text-uppercase">Lokasi Fisik</div>
+                                    <div class="fw-bold text-dark">{{ $item->barang->lokasi ?? 'Gudang Utama' }}</div>
+                                    <small class="text-muted">Audit Record ID: #{{ $item->id }}</small>
+                                </div>
+                            </div>
+
+                            <!-- Tabel Rekonsiliasi -->
+                            <div class="table-responsive mb-4">
+                                <table class="table receipt-table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter Audit</th>
+                                            <th class="text-end">Jumlah Unit</th>
+                                            <th>Keterangan Rekonsiliasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Stok Sebelum Opname (Sistem)</td>
+                                            <td class="text-end fw-semibold text-secondary">{{ number_format($stokSistem) }} Unit</td>
+                                            <td class="text-muted small">Catatan sistem sebelum audit</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Hasil Perhitungan Fisik Riil</strong></td>
+                                            <td class="text-end fw-bold text-dark fs-6">{{ number_format($item->stok_fisik) }} Unit</td>
+                                            <td><span class="badge badge-subtle-primary">Hasil Audit Aktual</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Selisih (Discrepancy)</strong></td>
+                                            <td class="text-end fw-bold fs-6 {{ $item->selisih > 0 ? 'text-success' : ($item->selisih < 0 ? 'text-danger' : 'text-secondary') }}">
+                                                {{ $item->selisih > 0 ? '+' : '' }}{{ number_format($item->selisih) }} Unit
+                                            </td>
+                                            <td>
+                                                @if ($item->selisih > 0)
+                                                    <span class="text-success small fw-semibold"><i class="bi bi-arrow-up-circle me-1"></i>Surplus Stok Fisik</span>
+                                                @elseif ($item->selisih < 0)
+                                                    <span class="text-danger small fw-semibold"><i class="bi bi-arrow-down-circle me-1"></i>Defisit Stok Fisik</span>
+                                                @else
+                                                    <span class="text-secondary small fw-semibold"><i class="bi bi-check-circle me-1"></i>Stok 100% Sesuai</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Status Lot Reconciliation Info -->
+                            <div class="mb-4 p-3 bg-light rounded-3 border">
+                                <h6 class="fw-bold text-dark mb-1 small text-uppercase">
+                                    <i class="bi bi-info-circle text-primary me-1"></i> Rekonsiliasi Lot FIFO Terkait:
+                                </h6>
+                                <p class="mb-0 small text-secondary">
+                                    @if ($item->selisih > 0)
+                                        Sistem otomatis menginisialisasi <strong>Lot Masuk Penyesuaian Opname</strong> sebanyak <strong>{{ $item->selisih }} unit</strong> pada tanggal audit agar FIFO lot pool tetap sinkron.
+                                    @elseif ($item->selisih < 0)
+                                        Sistem otomatis memotong saldo <strong>{{ abs($item->selisih) }} unit</strong> dari <strong>Lot FIFO Aktif Tertua</strong> yang masih memiliki saldo untuk menjaga konsistensi alokasi.
+                                    @else
+                                        Tidak ada penyesuaian lot yang diperlukan karena stok fisik identik dengan stok pada sistem inventaris.
+                                    @endif
+                                </p>
+                            </div>
+
+                            <!-- Kolom Verifikasi / Tanda Tangan -->
+                            <div class="row g-4 pt-4">
+                                <div class="col-6">
+                                    <div class="receipt-signature-box">
+                                        <div class="fw-bold text-dark">Petugas Auditor Fisik</div>
+                                        <div class="text-muted small">Pelaksana Perhitungan Fisik</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="receipt-signature-box">
+                                        <div class="fw-bold text-dark">Kepala Gudang / Supervisor</div>
+                                        <div class="text-muted small">Verifikasi & Otorisasi Audit</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top d-print-none">
+                            <button type="button" class="btn btn-app-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-lg"></i> Tutup
+                            </button>
+                            <a href="{{ route('inventory.receipt.opname', $item->id) }}?autoprint=1" target="_blank" class="btn btn-app-primary">
+                                <i class="bi bi-printer-fill me-1"></i> Cetak Berita Acara
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    @endforeach
+@endif
 @endsection

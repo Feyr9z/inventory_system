@@ -121,4 +121,13 @@ Route::middleware('auth')->prefix('inventory')->name('inventory.')->group(functi
     Route::middleware('role:admin,kepala_gudang,management')->group(function () {
         Route::get('log-aktivitas', [LogAktivitasController::class, 'index'])->name('log-aktivitas');
     });
+
+    // ======================
+    // CETAK DOKUMEN LOGISTIK & STRUK RESMI — Semua Role Terotentikasi
+    // ======================
+    Route::prefix('receipt')->name('receipt.')->group(function () {
+        Route::get('masuk/{id}',  [LaporanController::class, 'printMasukReceipt'])->name('masuk');
+        Route::get('keluar/{id}', [LaporanController::class, 'printKeluarReceipt'])->name('keluar');
+        Route::get('opname/{id}', [StockOpnameController::class, 'printOpnameReceipt'])->name('opname');
+    });
 });

@@ -98,4 +98,17 @@ class StockOpnameController extends Controller
 
         return view('transaksi.opname-history', compact('opname', 'sort'));
     }
+
+    /**
+     * Tampilan cetak resmi dokumen Berita Acara Rekonsiliasi & Stock Opname Fisik.
+     */
+    public function printOpnameReceipt($id)
+    {
+        $opname = StockOpname::with('barang.kategori')->findOrFail($id);
+
+        $docNumber = 'OPN-' . \Carbon\Carbon::parse($opname->tanggal)->format('Ymd') . '-' . str_pad($opname->id, 4, '0', STR_PAD_LEFT);
+        $stokSistem = $opname->stok_fisik - $opname->selisih;
+
+        return view('receipts.opname', compact('opname', 'docNumber', 'stokSistem'));
+    }
 }
