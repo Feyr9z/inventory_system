@@ -11,6 +11,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LogAktivitasController;
+use App\Http\Controllers\StaffPersonalTransaksiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -96,6 +97,11 @@ Route::middleware('auth')->prefix('inventory')->name('inventory.')->group(functi
         // History Opname — Admin + Kepala Gudang + Management
         Route::middleware('role:admin,kepala_gudang,management')->group(function () {
             Route::get('opname-history', [StockOpnameController::class, 'history'])->name('opname.history');
+        });
+
+        // Transaksi Saya (Personal) — Admin + Staff
+        Route::middleware('role:admin,staff')->group(function () {
+            Route::get('saya', [StaffPersonalTransaksiController::class, 'index'])->name('saya');
         });
     });
 

@@ -90,9 +90,15 @@
                                                 <i class="bi bi-arrow-up-right-circle me-2 text-warning"></i>Barang Keluar
                                             </a>
                                         </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('inventory.transaksi.saya') }}">
+                                                <i class="bi bi-clock-history me-2 text-primary"></i>Transaksi Saya
+                                            </a>
+                                        </li>
                                     @endif
                                     @if (in_array($userRole, ['admin', 'kepala_gudang']))
-                                        @if (in_array($userRole, ['admin', 'staff']))
+                                        @if (in_array($userRole, ['admin']))
                                             <li><hr class="dropdown-divider"></li>
                                         @endif
                                         <li>
@@ -100,8 +106,6 @@
                                                 <i class="bi bi-clipboard-check me-2 text-purple"></i>Stock Opname
                                             </a>
                                         </li>
-                                    @endif
-                                    @if (in_array($userRole, ['admin', 'kepala_gudang']))
                                         <li>
                                             <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.history') }}">
                                                 <i class="bi bi-journal-text me-2 text-secondary"></i>History Opname
@@ -109,6 +113,15 @@
                                         </li>
                                     @endif
                                 </ul>
+                            </li>
+                        @endif
+
+                        {{-- Transaksi Saya Nav Link khusus Staff --}}
+                        @if ($userRole === 'staff')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('inventory.transaksi.saya') ? 'active' : '' }}" href="{{ route('inventory.transaksi.saya') }}">
+                                    <i class="bi bi-clock-history me-1"></i> Transaksi Saya
+                                </a>
                             </li>
                         @endif
 
