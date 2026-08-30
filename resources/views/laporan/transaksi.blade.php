@@ -138,8 +138,11 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="fw-bold text-dark d-block">{{ $item['nama_barang'] }}</span>
-                                <span class="badge badge-subtle-secondary small mt-0.5"><i class="bi bi-tag me-1"></i>{{ $item['kategori'] ?? '-' }}</span>
+                                <a href="{{ route('inventory.barang.show', $item['barang_id']) }}" class="fw-bold text-dark text-decoration-none d-inline-flex align-items-center gap-1.5" title="Buka Detail Barang & Lot Pool">
+                                    <span class="hover-underline">{{ $item['nama_barang'] }}</span>
+                                    <i class="bi bi-box-arrow-up-right text-muted" style="font-size: 0.725rem;"></i>
+                                </a>
+                                <span class="badge badge-subtle-secondary small mt-0.5 d-table"><i class="bi bi-tag me-1"></i>{{ $item['kategori'] ?? '-' }}</span>
                             </td>
                             <td class="text-end">
                                 <span class="fw-bold fs-6 {{ $item['tipe'] === 'Masuk' ? 'text-success' : 'text-danger' }}">
@@ -256,7 +259,12 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td><strong class="text-dark">{{ $item['nama_barang'] }}</strong></td>
+                                            <td>
+                                                <a href="{{ route('inventory.barang.show', $item['barang_id']) }}" target="_blank" class="fw-bold text-dark text-decoration-none d-inline-flex align-items-center gap-1.5" title="Buka Detail Barang di Tab Baru">
+                                                    <span>{{ $item['nama_barang'] }}</span>
+                                                    <i class="bi bi-box-arrow-up-right text-primary" style="font-size: 0.75rem;"></i>
+                                                </a>
+                                            </td>
                                             <td><span class="text-muted small">{{ $item['kategori'] ?? '-' }}</span></td>
                                             <td class="text-end">
                                                 <span class="fw-bold fs-6 {{ $item['tipe'] === 'Masuk' ? 'text-success' : 'text-danger' }}">

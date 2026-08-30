@@ -87,8 +87,11 @@
                                 <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</small>
                             </td>
                             <td>
-                                <span class="fw-bold text-dark d-block">{{ $item->barang->nama_barang }}</span>
-                                <span class="badge badge-subtle-secondary small mt-0.5"><i class="bi bi-tag me-1"></i>{{ $item->barang->kategori?->nama_kategori ?? '-' }}</span>
+                                <a href="{{ route('inventory.barang.show', $item->barang_id) }}" class="fw-bold text-dark text-decoration-none d-inline-flex align-items-center gap-1.5" title="Buka Detail Barang & Lot Pool">
+                                    <span class="hover-underline">{{ $item->barang->nama_barang }}</span>
+                                    <i class="bi bi-box-arrow-up-right text-muted" style="font-size: 0.725rem;"></i>
+                                </a>
+                                <span class="badge badge-subtle-secondary small mt-0.5 d-table"><i class="bi bi-tag me-1"></i>{{ $item->barang->kategori?->nama_kategori ?? '-' }}</span>
                             </td>
                             <td class="text-end">
                                 <span class="fw-bold text-dark fs-6">{{ number_format($item->stok_fisik) }}</span> <small class="text-muted">Unit</small>
@@ -198,8 +201,11 @@
                             <div class="row g-3 mb-4 bg-light p-3 rounded-3 border">
                                 <div class="col-sm-6">
                                     <div class="small text-muted fw-semibold text-uppercase">Barang Yang Diaudit</div>
-                                    <div class="fw-bold text-dark fs-6">{{ $item->barang->nama_barang }}</div>
-                                    <small class="text-muted">Kategori: {{ $item->barang->kategori?->nama_kategori ?? '-' }}</small>
+                                    <a href="{{ route('inventory.barang.show', $item->barang_id) }}" target="_blank" class="fw-bold text-dark text-decoration-none fs-6 d-inline-flex align-items-center gap-1.5" title="Buka Detail Barang di Tab Baru">
+                                        <span>{{ $item->barang->nama_barang }}</span>
+                                        <i class="bi bi-box-arrow-up-right text-primary" style="font-size: 0.75rem;"></i>
+                                    </a>
+                                    <small class="text-muted d-block mt-0.5">Kategori: {{ $item->barang->kategori?->nama_kategori ?? '-' }}</small>
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="small text-muted fw-semibold text-uppercase">Lokasi Fisik</div>

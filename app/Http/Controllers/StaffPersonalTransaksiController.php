@@ -48,6 +48,7 @@ class StaffPersonalTransaksiController extends Controller
 
                 return [
                     'id'          => $item->id,
+                    'barang_id'   => $item->barang_id,
                     'doc_number'  => $docNumber,
                     'tanggal'     => $item->tanggal->format('Y-m-d'),
                     'tanggal_fmt' => $item->tanggal->format('d/m/Y'),
@@ -106,6 +107,7 @@ class StaffPersonalTransaksiController extends Controller
 
                 return [
                     'id'          => $item->id,
+                    'barang_id'   => $item->barang_id,
                     'doc_number'  => $docNumber,
                     'tanggal'     => $item->tanggal->format('Y-m-d'),
                     'tanggal_fmt' => $item->tanggal->format('d/m/Y'),
