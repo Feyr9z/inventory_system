@@ -22,107 +22,96 @@ use App\Http\Controllers\LogAktivitasController;
 Route::redirect('/', '/login');
 
 // Authentication Routes
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
+Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post')->middleware('guest');
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+Route::post('/logout',[LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Inventory Routes (Protected by auth)
-Route::middleware('auth')->prefix("inventory")->name("inventory.")->group(function () {
-    // ======================
-    // DASHBOARD
-    // ======================
-    Route::get("/", [DashboardController::class, "index"])->name("dashboard");
+Route::middleware('auth')->prefix('inventory')->name('inventory.')->group(function () {
 
     // ======================
-    // BARANG (CRUD) - Admin Only, View for Staff
+    // DASHBOARD — semua role
     // ======================
-    // Admin: full CRUD except index (will define separately)
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // ======================
+    // BARANG
+    // Admin + Kepala Gudang: create / edit / update
+    // Admin only           : destroy
+    // Semua role           : index
+    // ======================
+    Route::middleware('role:admin,kepala_gudang')->group(function () {
+        Route::get   ('barang/create',       [BarangController::class, 'create'])->name('barang.create');
+        Route::post  ('barang',              [BarangController::class, 'store']) ->name('barang.store');
+        Route::get   ('barang/{barang}/edit',[BarangController::class, 'edit'])  ->name('barang.edit');
+        Route::put   ('barang/{barang}',     [BarangController::class, 'update'])->name('barang.update');
+    });
+
     Route::middleware('role:admin')->group(function () {
-        Route::resource("barang", BarangController::class)->except(['index', 'show']);
+        Route::delete('barang/{barang}',     [BarangController::class, 'destroy'])->name('barang.destroy');
     });
-    
-    // Index accessible to Admin & Staff & Management
-    Route::middleware('role:admin,staff,management')->group(function () {
-        Route::get("barang", [BarangController::class, 'index'])->name("barang.index");
+
+    Route::middleware('role:admin,staff,kepala_gudang,management')->group(function () {
+        Route::get('barang', [BarangController::class, 'index'])->name('barang.index');
     });
 
     // ======================
-    // KATEGORI - Admin Only
+    // KATEGORI — Admin + Kepala Gudang
+    // ======================
+    Route::middleware('role:admin,kepala_gudang')->group(function () {
+        Route::resource('kategori', KategoriController::class);
+    });
+
+    // ======================
+    // USER MANAGEMENT — Admin Only
     // ======================
     Route::middleware('role:admin')->group(function () {
-        Route::resource("kategori", KategoriController::class);
+        Route::resource('user', UserController::class)->except(['show']);
     });
 
     // ======================
-    // USER MANAGEMENT - Admin Only
+    // TRANSAKSI
     // ======================
-    Route::middleware('role:admin')->group(function () {
-        Route::resource("user", UserController::class)->except(['show']);
-    });
+    Route::prefix('transaksi')->name('transaksi.')->group(function () {
 
-    // ======================
-    // TRANSAKSI - Admin & Staff
-    // ======================
-    Route::middleware('role:admin,staff')->prefix("transaksi")
-        ->name("transaksi.")
-        ->group(function () {
-            // Barang Masuk
-            Route::get("masuk", [
-                BarangMasukController::class,
-                "create",
-            ])->name("masuk.create");
-            Route::post("masuk", [
-                BarangMasukController::class,
-                "store",
-            ])->name("masuk.store");
-
-            // Barang Keluar
-            Route::get("keluar", [
-                BarangKeluarController::class,
-                "create",
-            ])->name("keluar.create");
-            Route::post("keluar", [
-                BarangKeluarController::class,
-                "store",
-            ])->name("keluar.store");
-
-            // Stock Opname - Admin Only
-            Route::middleware('role:admin')->group(function () {
-                Route::get("opname", [
-                    StockOpnameController::class,
-                    "create",
-                ])->name("opname.create");
-                Route::post("opname", [
-                    StockOpnameController::class,
-                    "store",
-                ])->name("opname.store");
-            });
+        // Barang Masuk — Admin + Staff (Kepala Gudang memantau, tidak input)
+        Route::middleware('role:admin,staff')->group(function () {
+            Route::get ('masuk', [BarangMasukController::class, 'create'])->name('masuk.create');
+            Route::post('masuk', [BarangMasukController::class, 'store']) ->name('masuk.store');
         });
 
-    // Opname History - Admin & Management (Outside transaksi group for management access)
-    Route::prefix("transaksi")->name("transaksi.")
-        ->middleware('role:admin|management')
-        ->group(function () {
-            Route::get("opname-history", [
-                StockOpnameController::class,
-                "history",
-            ])->name("opname.history");
+        // Barang Keluar — Admin + Staff
+        Route::middleware('role:admin,staff')->group(function () {
+            Route::get ('keluar', [BarangKeluarController::class, 'create'])->name('keluar.create');
+            Route::post('keluar', [BarangKeluarController::class, 'store']) ->name('keluar.store');
         });
 
-    // ======================
-    // LAPORAN - Admin & Management
-    // ======================
-    Route::middleware('role:admin,management')->group(function () {
-        Route::get("laporan/transaksi", [LaporanController::class, 'transaksi'])->name('laporan.transaksi');
-        Route::get("laporan/stok", [LaporanController::class, 'stok'])->name('laporan.stok');
-        Route::get("laporan/transaksi/export/csv", [LaporanController::class, 'exportTransaksiCsv'])->name('laporan.transaksi.export');
-        Route::get("laporan/stok/export/csv", [LaporanController::class, 'exportStokCsv'])->name('laporan.stok.export');
+        // Stock Opname (input) — Admin + Kepala Gudang
+        Route::middleware('role:admin,kepala_gudang')->group(function () {
+            Route::get ('opname', [StockOpnameController::class, 'create'])->name('opname.create');
+            Route::post('opname', [StockOpnameController::class, 'store']) ->name('opname.store');
+        });
+
+        // History Opname — Admin + Kepala Gudang + Management
+        Route::middleware('role:admin,kepala_gudang,management')->group(function () {
+            Route::get('opname-history', [StockOpnameController::class, 'history'])->name('opname.history');
+        });
     });
 
     // ======================
-    // LOG AKTIVITAS - Admin & Management
+    // LAPORAN — Admin + Kepala Gudang + Management
     // ======================
-    Route::middleware('role:admin,management')->group(function () {
-        Route::get("log-aktivitas", [LogAktivitasController::class, 'index'])->name('log-aktivitas');
+    Route::middleware('role:admin,kepala_gudang,management')->group(function () {
+        Route::get('laporan/transaksi',          [LaporanController::class, 'transaksi'])       ->name('laporan.transaksi');
+        Route::get('laporan/stok',               [LaporanController::class, 'stok'])            ->name('laporan.stok');
+        Route::get('laporan/transaksi/export/csv',[LaporanController::class, 'exportTransaksiCsv'])->name('laporan.transaksi.export');
+        Route::get('laporan/stok/export/csv',    [LaporanController::class, 'exportStokCsv'])   ->name('laporan.stok.export');
+    });
+
+    // ======================
+    // LOG AKTIVITAS — Admin + Kepala Gudang + Management
+    // ======================
+    Route::middleware('role:admin,kepala_gudang,management')->group(function () {
+        Route::get('log-aktivitas', [LogAktivitasController::class, 'index'])->name('log-aktivitas');
     });
 });

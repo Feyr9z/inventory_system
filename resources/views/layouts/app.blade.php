@@ -21,6 +21,7 @@
 </head>
 <body>
     @if (auth()->check())
+        @php $userRole = auth()->user()->role; @endphp
         <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
             <div class="container-fluid px-lg-4">
                 <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('inventory.dashboard') }}">
@@ -40,7 +41,8 @@
                             </a>
                         </li>
 
-                        @if (auth()->user()->role === 'admin')
+                        {{-- Barang: Admin + Kepala Gudang (full menu), Staff + Management (hanya lihat stok) --}}
+                        @if (in_array($userRole, ['admin', 'kepala_gudang']))
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.barang.*') ? 'active' : '' }}" href="{{ route('inventory.barang.index') }}">
                                     Barang
@@ -51,6 +53,9 @@
                                     Kategori
                                 </a>
                             </li>
+                        @endif
+
+                        @if ($userRole === 'admin')
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.user.*') ? 'active' : '' }}" href="{{ route('inventory.user.index') }}">
                                     User
@@ -58,32 +63,48 @@
                             </li>
                         @endif
 
-                        @if (in_array(auth()->user()->role, ['admin', 'staff']))
+                        {{-- Stok Barang: Staff + Management (view-only label) --}}
+                        @if (in_array($userRole, ['staff', 'management']))
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('inventory.barang.*') ? 'active' : '' }}" href="{{ route('inventory.barang.index') }}">
+                                    Stok Barang
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Transaksi: Admin + Staff (input); Kepala Gudang (opname saja) --}}
+                        @if (in_array($userRole, ['admin', 'staff', 'kepala_gudang']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle {{ request()->routeIs('inventory.transaksi.*') ? 'active' : '' }}" href="#" id="transaksiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Transaksi
                                 </a>
                                 <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="transaksiDropdown">
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('inventory.transaksi.masuk.create') }}">
-                                            Barang Masuk
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('inventory.transaksi.keluar.create') }}">
-                                            Barang Keluar
-                                        </a>
-                                    </li>
-                                    @if (auth()->user()->role === 'admin')
-                                        <li><hr class="dropdown-divider"></li>
+                                    @if (in_array($userRole, ['admin', 'staff']))
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.create') }}">
-                                                Stock Opname
+                                            <a class="dropdown-item" href="{{ route('inventory.transaksi.masuk.create') }}">
+                                                <i class="bi bi-arrow-down-left-circle me-2 text-info"></i>Barang Masuk
                                             </a>
                                         </li>
                                         <li>
+                                            <a class="dropdown-item" href="{{ route('inventory.transaksi.keluar.create') }}">
+                                                <i class="bi bi-arrow-up-right-circle me-2 text-warning"></i>Barang Keluar
+                                            </a>
+                                        </li>
+                                    @endif
+                                    @if (in_array($userRole, ['admin', 'kepala_gudang']))
+                                        @if (in_array($userRole, ['admin', 'staff']))
+                                            <li><hr class="dropdown-divider"></li>
+                                        @endif
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.create') }}">
+                                                <i class="bi bi-clipboard-check me-2 text-purple"></i>Stock Opname
+                                            </a>
+                                        </li>
+                                    @endif
+                                    @if (in_array($userRole, ['admin', 'kepala_gudang']))
+                                        <li>
                                             <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.history') }}">
-                                                History Opname
+                                                <i class="bi bi-journal-text me-2 text-secondary"></i>History Opname
                                             </a>
                                         </li>
                                     @endif
@@ -91,7 +112,8 @@
                             </li>
                         @endif
 
-                        @if (in_array(auth()->user()->role, ['admin', 'management']))
+                        {{-- Laporan: Admin + Kepala Gudang + Management --}}
+                        @if (in_array($userRole, ['admin', 'kepala_gudang', 'management']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle {{ request()->routeIs('inventory.laporan.*') ? 'active' : '' }}" href="#" id="laporanDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Laporan
@@ -99,36 +121,26 @@
                                 <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="laporanDropdown">
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.laporan.transaksi') }}">
-                                            Laporan Transaksi
+                                            <i class="bi bi-graph-up-arrow me-2 text-primary"></i>Laporan Transaksi
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.laporan.stok') }}">
-                                            Laporan Stok
+                                            <i class="bi bi-bar-chart-line me-2 text-success"></i>Laporan Stok
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.history') }}">
-                                            History Opname
+                                            <i class="bi bi-journal-text me-2 text-secondary"></i>History Opname
                                         </a>
                                     </li>
                                 </ul>
                             </li>
-                        @endif
 
-                        @if (in_array(auth()->user()->role, ['admin', 'management']))
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('inventory.log-aktivitas') ? 'active' : '' }}" href="{{ route('inventory.log-aktivitas') }}">
                                     Log Aktivitas
-                                </a>
-                            </li>
-                        @endif
-
-                        @if (in_array(auth()->user()->role, ['staff', 'management']))
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs('inventory.barang.*') ? 'active' : '' }}" href="{{ route('inventory.barang.index') }}">
-                                    Stok Barang
                                 </a>
                             </li>
                         @endif
@@ -141,7 +153,9 @@
                             </div>
                             <div class="pe-1">
                                 <div class="fw-semibold lh-1 fs-6 text-white">{{ auth()->user()->name }}</div>
-                                <small class="text-white-50 text-capitalize fs-7">{{ auth()->user()->role }}</small>
+                                <small class="text-white-50 fs-7">
+                                    {{ \App\Enums\Role::tryFrom($userRole)?->label() ?? ucfirst($userRole) }}
+                                </small>
                             </div>
                         </div>
                         <form action="{{ route('logout') }}" method="POST" class="m-0">

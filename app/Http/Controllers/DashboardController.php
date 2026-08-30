@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Models\Barang;
 use App\Models\BarangMasuk;
 use App\Models\BarangKeluar;
@@ -13,46 +14,43 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $total = Barang::count();
-        $stok = Barang::sum("stok");
-        $barang_minimum = Barang::whereRaw('stok < stok_minimum')->count();
 
         $data = [
-            'total' => $total,
-            'stok' => $stok,
-            'barang_minimum' => $barang_minimum,
-            'role' => $user->role,
+            'role'           => $user->role,
+            'total'          => Barang::count(),
+            'stok'           => Barang::sum('stok'),
+            'barang_minimum' => Barang::whereRaw('stok < stok_minimum')->count(),
         ];
 
-        if ($user->role === 'admin') {
+        // Statistik bulanan berdasarkan role
+        $roleValue = $user->role;
+
+        if (in_array($roleValue, [
+            Role::Admin->value,
+            Role::KepalaGudang->value,
+            Role::Management->value,
+        ])) {
             $data['barang_masuk_bulan_ini'] = BarangMasuk::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
+
             $data['barang_keluar_bulan_ini'] = BarangKeluar::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
+
             $data['opname_bulan_ini'] = StockOpname::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->count();
-        } elseif ($user->role === 'staff') {
+        } elseif ($roleValue === Role::Staff->value) {
             $data['barang_masuk_bulan_ini'] = BarangMasuk::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
+
             $data['barang_keluar_bulan_ini'] = BarangKeluar::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
-        } elseif ($user->role === 'management') {
-            $data['barang_masuk_bulan_ini'] = BarangMasuk::whereMonth('tanggal', now()->month)
-                ->whereYear('tanggal', now()->year)
-                ->sum('jumlah');
-            $data['barang_keluar_bulan_ini'] = BarangKeluar::whereMonth('tanggal', now()->month)
-                ->whereYear('tanggal', now()->year)
-                ->sum('jumlah');
-            $data['opname_bulan_ini'] = StockOpname::whereMonth('tanggal', now()->month)
-                ->whereYear('tanggal', now()->year)
-                ->count();
         }
 
-        return view("dashboard", $data);
+        return view('dashboard', $data);
     }
 }

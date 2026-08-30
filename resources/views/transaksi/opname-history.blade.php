@@ -8,8 +8,8 @@
         <h3 class="fw-bold text-dark mb-1">History Stock Opname</h3>
         <p class="text-muted small mb-0">Riwayat hasil perhitungan fisik stok dan audit penyesuaian inventaris</p>
     </div>
-    @if (auth()->user()->role === 'admin')
-        <a href="{{ route('inventory.transaksi.opname.create') }}" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold">
+    @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
+        <a href="{{ route('inventory.transaksi.opname.create') }}" class="btn-app-primary d-inline-flex align-items-center gap-2 fw-semibold">
             <i class="bi bi-clipboard-check"></i> Stock Opname Baru
         </a>
     @endif
@@ -72,7 +72,7 @@
             <i class="bi bi-journal-text fs-1 d-block mb-2 text-secondary"></i>
             <h5 class="fw-semibold text-dark">Belum Ada Riwayat Stock Opname</h5>
             <p class="small mb-3">Lakukan penyesuaian stok fisik barang terlebih dahulu.</p>
-            @if (auth()->user()->role === 'admin')
+            @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
                 <a href="{{ route('inventory.transaksi.opname.create') }}" class="btn btn-sm btn-primary">
                     <i class="bi bi-clipboard-check me-1"></i> Stock Opname Baru
                 </a>

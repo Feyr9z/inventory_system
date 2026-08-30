@@ -6,7 +6,10 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
     <div>
         <h3 class="fw-bold text-dark mb-1">Dashboard Overview</h3>
-        <p class="text-muted small mb-0">Selamat datang kembali, <strong>{{ auth()->user()->name }}</strong> ({{ ucfirst(auth()->user()->role) }})</p>
+        <p class="text-muted small mb-0">
+            Selamat datang kembali, <strong>{{ auth()->user()->name }}</strong>
+            ({{ \App\Enums\Role::tryFrom(auth()->user()->role)?->label() ?? ucfirst(auth()->user()->role) }})
+        </p>
     </div>
 </div>
 
@@ -76,7 +79,8 @@
         </div>
     </div>
 
-    @if ($role === 'admin')
+    {{-- Kartu statistik bulanan: Admin, Kepala Gudang, Management --}}
+    @if (in_array($role, ['admin', 'kepala_gudang', 'management']))
         <div class="col-lg-3 col-md-6">
             <div class="card-elevated p-3">
                 <div class="d-flex align-items-center justify-content-between">
@@ -143,46 +147,6 @@
                 </div>
             </div>
         </div>
-    @elseif ($role === 'management')
-        <div class="col-lg-3 col-md-6">
-            <div class="card-elevated p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Masuk (Bln Ini)</span>
-                        <h2 class="fw-bold text-dark mb-0">{{ number_format($barang_masuk_bulan_ini ?? 0) }}</h2>
-                    </div>
-                    <div class="icon-box icon-box-info">
-                        <i class="bi bi-arrow-down-left-circle-fill"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card-elevated p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Keluar (Bln Ini)</span>
-                        <h2 class="fw-bold text-dark mb-0">{{ number_format($barang_keluar_bulan_ini ?? 0) }}</h2>
-                    </div>
-                    <div class="icon-box icon-box-warning">
-                        <i class="bi bi-arrow-up-right-circle-fill"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card-elevated p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Opname (Bln Ini)</span>
-                        <h2 class="fw-bold text-dark mb-0">{{ number_format($opname_bulan_ini ?? 0) }}</h2>
-                    </div>
-                    <div class="icon-box icon-box-purple">
-                        <i class="bi bi-clipboard-check-fill"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
     @endif
 </div>
 
@@ -193,6 +157,7 @@
     </div>
     
     <div class="row g-3">
+        {{-- Daftar Barang — semua role --}}
         <div class="col-lg-2 col-md-3 col-sm-4 col-6">
             <a href="{{ route('inventory.barang.index') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
                 <div class="icon-box icon-box-primary mx-auto mb-2">
@@ -202,7 +167,8 @@
             </a>
         </div>
 
-        @if ($role === 'admin')
+        {{-- Tambah Barang — Admin + Kepala Gudang --}}
+        @if (in_array($role, ['admin', 'kepala_gudang']))
             <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                 <a href="{{ route('inventory.barang.create') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
                     <div class="icon-box icon-box-success mx-auto mb-2">
@@ -213,7 +179,8 @@
             </div>
         @endif
 
-        @if ($role === 'admin' || $role === 'staff')
+        {{-- Barang Masuk & Keluar — Admin + Staff --}}
+        @if (in_array($role, ['admin', 'staff']))
             <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                 <a href="{{ route('inventory.transaksi.masuk.create') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
                     <div class="icon-box icon-box-info mx-auto mb-2">
@@ -232,7 +199,8 @@
             </div>
         @endif
 
-        @if ($role === 'admin')
+        {{-- Stock Opname — Admin + Kepala Gudang --}}
+        @if (in_array($role, ['admin', 'kepala_gudang']))
             <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                 <a href="{{ route('inventory.transaksi.opname.create') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
                     <div class="icon-box icon-box-purple mx-auto mb-2">
@@ -241,6 +209,10 @@
                     <span class="fw-semibold small d-block">Stock Opname</span>
                 </a>
             </div>
+        @endif
+
+        {{-- History Opname — Admin + Kepala Gudang + Management --}}
+        @if (in_array($role, ['admin', 'kepala_gudang', 'management']))
             <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                 <a href="{{ route('inventory.transaksi.opname.history') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
                     <div class="icon-box icon-box-info mx-auto mb-2">
@@ -249,25 +221,10 @@
                     <span class="fw-semibold small d-block">History Opname</span>
                 </a>
             </div>
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="{{ route('inventory.laporan.stok') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
-                    <div class="icon-box icon-box-primary mx-auto mb-2">
-                        <i class="bi bi-bar-chart-line"></i>
-                    </div>
-                    <span class="fw-semibold small d-block">Laporan Stok</span>
-                </a>
-            </div>
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="{{ route('inventory.log-aktivitas') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
-                    <div class="icon-box icon-box-danger mx-auto mb-2">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
-                    <span class="fw-semibold small d-block">Log Aktivitas</span>
-                </a>
-            </div>
         @endif
 
-        @if ($role === 'management')
+        {{-- Laporan & Log — Admin + Kepala Gudang + Management --}}
+        @if (in_array($role, ['admin', 'kepala_gudang', 'management']))
             <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                 <a href="{{ route('inventory.laporan.stok') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
                     <div class="icon-box icon-box-primary mx-auto mb-2">
@@ -282,14 +239,6 @@
                         <i class="bi bi-graph-up-arrow"></i>
                     </div>
                     <span class="fw-semibold small d-block">Laporan Transaksi</span>
-                </a>
-            </div>
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="{{ route('inventory.transaksi.opname.history') }}" class="card-elevated p-3 text-center text-decoration-none text-dark d-block h-100">
-                    <div class="icon-box icon-box-purple mx-auto mb-2">
-                        <i class="bi bi-journal-text"></i>
-                    </div>
-                    <span class="fw-semibold small d-block">History Opname</span>
                 </a>
             </div>
             <div class="col-lg-2 col-md-3 col-sm-4 col-6">
