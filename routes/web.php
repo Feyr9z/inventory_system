@@ -52,7 +52,8 @@ Route::middleware('auth')->prefix('inventory')->name('inventory.')->group(functi
     });
 
     Route::middleware('role:admin,staff,kepala_gudang,management')->group(function () {
-        Route::get('barang', [BarangController::class, 'index'])->name('barang.index');
+        Route::get('barang',          [BarangController::class, 'index'])->name('barang.index');
+        Route::get('barang/{barang}', [BarangController::class, 'show'])->name('barang.show');
     });
 
     // ======================

@@ -57,7 +57,7 @@
             <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
             <h5 class="fw-semibold text-dark">Belum Ada Barang</h5>
             <p class="small mb-3">Tidak ada data barang yang sesuai dengan pencarian kamu.</p>
-            @if (auth()->user()->role === 'admin')
+            @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
                 <a href="{{ route('inventory.barang.create') }}" class="btn btn-sm btn-primary">
                     <i class="bi bi-plus-lg me-1"></i> Tambah Barang Baru
                 </a>
@@ -82,7 +82,9 @@
                         <tr>
                             <td class="ps-4"><span class="text-muted fw-semibold small">#{{ $item->id }}</span></td>
                             <td>
-                                <span class="fw-bold text-dark d-block">{{ $item->nama_barang }}</span>
+                                <a href="{{ route('inventory.barang.show', $item->id) }}" class="fw-bold text-dark text-decoration-none hover-primary d-block">
+                                    {{ $item->nama_barang }}
+                                </a>
                             </td>
                             <td>
                                 <span class="badge badge-subtle-info">
@@ -105,10 +107,15 @@
                                 </span>
                             </td>
                             <td class="text-end pe-4">
-                                <div class="d-inline-flex gap-1.5">
-                                    <a href="{{ route('inventory.barang.edit', $item->id) }}" class="btn-action-edit" title="Edit">
-                                        <i class="bi bi-pencil"></i>
+                                <div class="d-inline-flex gap-1.5 align-items-center">
+                                    <a href="{{ route('inventory.barang.show', $item->id) }}" class="btn btn-sm btn-outline-info p-1 px-2 d-inline-flex align-items-center gap-1" title="Lihat Detail & Lot FIFO">
+                                        <i class="bi bi-eye"></i> Detail
                                     </a>
+                                    @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
+                                        <a href="{{ route('inventory.barang.edit', $item->id) }}" class="btn-action-edit" title="Edit Data">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    @endif
                                     @if (auth()->user()->role === 'admin')
                                         <form action="{{ route('inventory.barang.destroy', $item->id) }}" method="POST" class="d-inline">
                                             @csrf

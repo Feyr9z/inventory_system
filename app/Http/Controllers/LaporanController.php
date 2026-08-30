@@ -5,155 +5,164 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\BarangMasuk;
 use App\Models\BarangKeluar;
-use App\Models\StockOpname;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanController extends Controller
 {
+    /**
+     * Menampilkan laporan transaksi barang masuk & keluar dengan informasi detail FIFO.
+     */
     public function transaksi(Request $request)
     {
-        $dari_tanggal = $request->input('dari_tanggal', now()->startOfMonth()->format('Y-m-d'));
+        $dari_tanggal   = $request->input('dari_tanggal', now()->startOfMonth()->format('Y-m-d'));
         $sampai_tanggal = $request->input('sampai_tanggal', now()->format('Y-m-d'));
         $tipe_transaksi = $request->input('tipe_transaksi', 'semua');
 
         $data = [];
-        $total_masuk = 0;
+        $total_masuk  = 0;
         $total_keluar = 0;
 
         if ($tipe_transaksi === 'masuk' || $tipe_transaksi === 'semua') {
-            $masuk = BarangMasuk::with('barang')
+            $masuk = BarangMasuk::with(['barang', 'user'])
                 ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal])
                 ->get()
                 ->map(function ($item) use (&$total_masuk) {
                     $total_masuk += $item->jumlah;
                     return [
-                        'tanggal' => $item->tanggal,
-                        'tipe' => 'Masuk',
-                        'nama_barang' => $item->barang->nama_barang,
-                        'jumlah' => $item->jumlah,
-                        'keterangan' => $item->sumber,
+                        'id'          => $item->id,
+                        'tanggal'     => $item->tanggal->format('Y-m-d'),
+                        'tipe'        => 'Masuk',
+                        'nama_barang' => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
+                        'jumlah'      => $item->jumlah,
+                        'sisa_jumlah' => $item->sisa_jumlah,
+                        'keterangan'  => $item->sumber,
+                        'petugas'     => $item->user?->name ?? '-',
+                        'fifo_info'   => null,
                     ];
                 });
             $data = array_merge($data, $masuk->toArray());
         }
 
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
-            $keluar = BarangKeluar::with('barang')
+            $keluar = BarangKeluar::with(['barang', 'user', 'details.barangMasuk'])
                 ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal])
                 ->get()
                 ->map(function ($item) use (&$total_keluar) {
                     $total_keluar += $item->jumlah;
+
+                    // Buat ringkasan alokasi lot FIFO
+                    $fifoBreakdown = $item->details->map(function ($detail) {
+                        $lotDate = $detail->barangMasuk?->tanggal?->format('d/m/Y') ?? '-';
+                        $lotSource = $detail->barangMasuk?->sumber ?? '-';
+                        return "Lot #{$detail->barang_masuk_id} ({$lotDate}, {$lotSource}): {$detail->jumlah_diambil} unit";
+                    })->all();
+
                     return [
-                        'tanggal' => $item->tanggal,
-                        'tipe' => 'Keluar',
-                        'nama_barang' => $item->barang->nama_barang,
-                        'jumlah' => -$item->jumlah,
-                        'keterangan' => $item->tujuan,
+                        'id'          => $item->id,
+                        'tanggal'     => $item->tanggal->format('Y-m-d'),
+                        'tipe'        => 'Keluar',
+                        'nama_barang' => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
+                        'jumlah'      => -$item->jumlah,
+                        'sisa_jumlah' => null,
+                        'keterangan'  => $item->tujuan,
+                        'petugas'     => $item->user?->name ?? '-',
+                        'fifo_info'   => $fifoBreakdown,
                     ];
                 });
             $data = array_merge($data, $keluar->toArray());
         }
 
-        // Sort by tanggal
+        // Urutkan berdasarkan tanggal ASC
         usort($data, function ($a, $b) {
             return strtotime($a['tanggal']) - strtotime($b['tanggal']);
         });
 
-        return view('laporan.transaksi', compact('data', 'dari_tanggal', 'sampai_tanggal', 'tipe_transaksi', 'total_masuk', 'total_keluar'));
+        return view('laporan.transaksi', compact(
+            'data',
+            'dari_tanggal',
+            'sampai_tanggal',
+            'tipe_transaksi',
+            'total_masuk',
+            'total_keluar'
+        ));
     }
 
+    /**
+     * Menampilkan laporan posisi stok dengan filtering efisien langsung pada SQL query (PRD §19 SHOULD CHANGE #3).
+     */
     public function stok(Request $request)
     {
-        $kategori_id = $request->input('kategori_id', null);
-        $status = $request->input('status', null);
+        $kategori_id = $request->input('kategori_id');
+        $status      = $request->input('status');
 
-        // Build query
-        $query = Barang::with('kategori')
-            ->when($kategori_id, function ($query) use ($kategori_id) {
-                return $query->where('kategori_id', $kategori_id);
-            });
+        $query = Barang::with(['kategori', 'barangMasuk' => function ($q) {
+            $q->where('sisa_jumlah', '>', 0)->orderBy('tanggal', 'asc');
+        }]);
 
-        // Get all for status filtering
-        $allBarang = $query->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'nama_barang' => $item->nama_barang,
-                    'kategori' => $item->kategori->nama_kategori,
-                    'stok' => $item->stok,
-                    'stok_minimum' => $item->stok_minimum,
-                    'status' => $item->stok < $item->stok_minimum ? 'Kurang' : 'Normal',
-                    'lokasi' => $item->lokasi,
-                ];
-            })
-            ->toArray();
-
-        // Filter by status if provided
-        if ($status && $status !== 'semua') {
-            $allBarang = array_filter($allBarang, function ($item) use ($status) {
-                return $item['status'] === ucfirst($status);
-            });
-            $allBarang = array_values($allBarang);
+        if ($kategori_id) {
+            $query->where('kategori_id', $kategori_id);
         }
 
-        // Paginate
-        $page = request('page', 1);
-        $perPage = 15;
-        $total = count($allBarang);
-        $barang = array_slice($allBarang, ($page - 1) * $perPage, $perPage);
-        
-        // Create paginator instance
-        $barang = new \Illuminate\Pagination\Paginator(
-            $barang,
-            $perPage,
-            $page,
-            [
-                'path' => route('inventory.laporan.stok'),
-                'query' => $request->query(),
-            ]
-        );
+        if ($status === 'kurang') {
+            $query->whereRaw('stok < stok_minimum');
+        } elseif ($status === 'normal') {
+            $query->whereRaw('stok >= stok_minimum');
+        }
 
-        $kategori = \App\Models\Kategori::all();
+        $barang   = $query->orderBy('nama_barang', 'asc')->paginate(15)->withQueryString();
+        $kategori = Kategori::orderBy('nama_kategori', 'asc')->get();
 
         return view('laporan.stok', compact('barang', 'kategori', 'kategori_id', 'status'));
     }
 
+    /**
+     * Export laporan transaksi ke CSV dengan informasi petugas dan detail FIFO.
+     */
     public function exportTransaksiCsv(Request $request)
     {
-        $dari_tanggal = $request->input('dari_tanggal', now()->startOfMonth()->format('Y-m-d'));
+        $dari_tanggal   = $request->input('dari_tanggal', now()->startOfMonth()->format('Y-m-d'));
         $sampai_tanggal = $request->input('sampai_tanggal', now()->format('Y-m-d'));
         $tipe_transaksi = $request->input('tipe_transaksi', 'semua');
 
         $data = [];
 
         if ($tipe_transaksi === 'masuk' || $tipe_transaksi === 'semua') {
-            $masuk = BarangMasuk::with('barang')
+            $masuk = BarangMasuk::with(['barang', 'user'])
                 ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal])
                 ->get()
                 ->map(function ($item) {
                     return [
-                        'tanggal' => $item->tanggal,
-                        'tipe' => 'Masuk',
-                        'nama_barang' => $item->barang->nama_barang,
-                        'jumlah' => $item->jumlah,
-                        'keterangan' => $item->sumber,
+                        'tanggal'     => $item->tanggal->format('Y-m-d'),
+                        'tipe'        => 'Masuk',
+                        'nama_barang' => $item->barang?->nama_barang ?? '-',
+                        'jumlah'      => $item->jumlah,
+                        'keterangan'  => $item->sumber,
+                        'petugas'     => $item->user?->name ?? '-',
+                        'alokasi_fifo'=> "Lot ID: {$item->id} (Sisa: {$item->sisa_jumlah})",
                     ];
                 });
             $data = array_merge($data, $masuk->toArray());
         }
 
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
-            $keluar = BarangKeluar::with('barang')
+            $keluar = BarangKeluar::with(['barang', 'user', 'details.barangMasuk'])
                 ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal])
                 ->get()
                 ->map(function ($item) {
+                    $fifoBreakdown = $item->details->map(function ($d) {
+                        return "Lot #{$d->barang_masuk_id} ({$d->jumlah_diambil} unit)";
+                    })->implode('; ');
+
                     return [
-                        'tanggal' => $item->tanggal,
-                        'tipe' => 'Keluar',
-                        'nama_barang' => $item->barang->nama_barang,
-                        'jumlah' => $item->jumlah,
-                        'keterangan' => $item->tujuan,
+                        'tanggal'     => $item->tanggal->format('Y-m-d'),
+                        'tipe'        => 'Keluar',
+                        'nama_barang' => $item->barang?->nama_barang ?? '-',
+                        'jumlah'      => $item->jumlah,
+                        'keterangan'  => $item->tujuan,
+                        'petugas'     => $item->user?->name ?? '-',
+                        'alokasi_fifo'=> $fifoBreakdown ?: 'FIFO',
                     ];
                 });
             $data = array_merge($data, $keluar->toArray());
@@ -165,13 +174,13 @@ class LaporanController extends Controller
 
         $filename = 'laporan-transaksi-' . $dari_tanggal . '-to-' . $sampai_tanggal . '.csv';
 
-        $response = new StreamedResponse(function () use ($data) {
+        return new StreamedResponse(function () use ($data) {
             $handle = fopen('php://output', 'w');
-            
-            // Headers
-            fputcsv($handle, ['Tanggal', 'Tipe', 'Nama Barang', 'Jumlah', 'Keterangan']);
-            
-            // Data
+
+            // CSV Headers
+            fputcsv($handle, ['Tanggal', 'Tipe', 'Nama Barang', 'Jumlah Unit', 'Keterangan / Tujuan / Sumber', 'Petugas Input', 'Alokasi Lot FIFO']);
+
+            // CSV Data Rows
             foreach ($data as $item) {
                 fputcsv($handle, [
                     $item['tanggal'],
@@ -179,73 +188,61 @@ class LaporanController extends Controller
                     $item['nama_barang'],
                     $item['jumlah'],
                     $item['keterangan'],
+                    $item['petugas'],
+                    $item['alokasi_fifo'],
                 ]);
             }
-            
+
             fclose($handle);
         }, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type'        => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
-
-        return $response;
     }
 
+    /**
+     * Export laporan posisi stok ke CSV dengan filtering SQL.
+     */
     public function exportStokCsv(Request $request)
     {
-        $kategori_id = $request->input('kategori_id', null);
-        $status = $request->input('status', null);
+        $kategori_id = $request->input('kategori_id');
+        $status      = $request->input('status');
 
-        $barang = Barang::with('kategori')
-            ->when($kategori_id, function ($query) use ($kategori_id) {
-                return $query->where('kategori_id', $kategori_id);
-            })
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'nama_barang' => $item->nama_barang,
-                    'kategori' => $item->kategori->nama_kategori,
-                    'stok' => $item->stok,
-                    'stok_minimum' => $item->stok_minimum,
-                    'status' => $item->stok < $item->stok_minimum ? 'Kurang' : 'Normal',
-                    'lokasi' => $item->lokasi ?? '-',
-                ];
-            })
-            ->toArray();
+        $query = Barang::with('kategori');
 
-        if ($status && $status !== 'semua') {
-            $barang = array_filter($barang, function ($item) use ($status) {
-                return $item['status'] === ucfirst($status);
-            });
-            $barang = array_values($barang);
+        if ($kategori_id) {
+            $query->where('kategori_id', $kategori_id);
         }
 
+        if ($status === 'kurang') {
+            $query->whereRaw('stok < stok_minimum');
+        } elseif ($status === 'normal') {
+            $query->whereRaw('stok >= stok_minimum');
+        }
+
+        $barang = $query->orderBy('nama_barang', 'asc')->get();
         $filename = 'laporan-stok-' . now()->format('Y-m-d-His') . '.csv';
 
-        $response = new StreamedResponse(function () use ($barang) {
+        return new StreamedResponse(function () use ($barang) {
             $handle = fopen('php://output', 'w');
-            
-            // Headers
-            fputcsv($handle, ['Nama Barang', 'Kategori', 'Stok', 'Stok Minimum', 'Status', 'Lokasi']);
-            
-            // Data
+
+            fputcsv($handle, ['Nama Barang', 'Kategori', 'Stok Saat Ini', 'Stok Minimum', 'Status Stok', 'Lokasi Gudang']);
+
             foreach ($barang as $item) {
                 fputcsv($handle, [
-                    $item['nama_barang'],
-                    $item['kategori'],
-                    $item['stok'],
-                    $item['stok_minimum'],
-                    $item['status'],
-                    $item['lokasi'],
+                    $item->nama_barang,
+                    $item->kategori?->nama_kategori ?? '-',
+                    $item->stok,
+                    $item->stok_minimum,
+                    $item->stok < $item->stok_minimum ? 'Kurang (Perlu Restock)' : 'Normal (Aman)',
+                    $item->lokasi ?? '-',
                 ]);
             }
-            
+
             fclose($handle);
         }, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type'        => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
-
-        return $response;
     }
 }

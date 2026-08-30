@@ -6,7 +6,7 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
     <div>
         <h3 class="fw-bold text-dark mb-1">Laporan Stok Barang</h3>
-        <p class="text-muted small mb-0">Monitor posisi ketersediaan stok barang dan deteksi stok kritis</p>
+        <p class="text-muted small mb-0">Monitor posisi ketersediaan stok barang, sisa lot aktif FIFO, dan deteksi stok kritis</p>
     </div>
 </div>
 
@@ -37,7 +37,7 @@
             <button type="submit" class="btn btn-primary flex-grow-1 fw-semibold d-flex align-items-center justify-content-center gap-1">
                 <i class="bi bi-filter"></i> Filter
             </button>
-            @if (count($barang) > 0)
+            @if ($barang->count() > 0)
                 <a href="{{ route('inventory.laporan.stok.export') }}?kategori_id={{ $kategori_id }}&status={{ $status }}" class="btn btn-success fw-semibold d-flex align-items-center gap-1" title="Download CSV">
                     <i class="bi bi-download"></i> Export CSV
                 </a>
@@ -46,7 +46,7 @@
     </form>
 </div>
 
-@if (count($barang) > 0)
+@if ($barang->count() > 0)
     <div class="card-elevated overflow-hidden mb-4">
         <div class="table-responsive">
             <table class="table table-custom align-middle">
@@ -55,30 +55,39 @@
                         <th class="ps-4">No</th>
                         <th>Nama Barang</th>
                         <th>Kategori</th>
-                        <th class="text-end">Stok Saat Ini</th>
-                        <th class="text-end">Stok Minimum</th>
+                        <th class="text-end">Stok Total</th>
+                        <th class="text-end">Stok Min</th>
                         <th>Status Stok</th>
+                        <th>Lot Aktif (FIFO)</th>
                         <th class="pe-4">Lokasi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($barang as $idx => $item)
                         <tr>
-                            <td class="ps-4"><span class="text-muted fw-semibold small">#{{ $idx + 1 }}</span></td>
-                            <td><span class="fw-bold text-dark">{{ $item['nama_barang'] }}</span></td>
+                            <td class="ps-4">
+                                <span class="text-muted fw-semibold small">
+                                    #{{ $barang->firstItem() + $idx }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ route('inventory.barang.show', $item->id) }}" class="fw-bold text-dark text-decoration-none hover-primary">
+                                    {{ $item->nama_barang }}
+                                </a>
+                            </td>
                             <td>
                                 <span class="badge badge-subtle-info">
-                                    <i class="bi bi-tag-fill me-1"></i>{{ $item['kategori'] }}
+                                    <i class="bi bi-tag-fill me-1"></i>{{ $item->kategori?->nama_kategori ?? '-' }}
                                 </span>
                             </td>
                             <td class="text-end">
-                                <span class="fw-bold fs-6 {{ $item['stok'] < $item['stok_minimum'] ? 'text-danger' : 'text-dark' }}">
-                                    {{ number_format($item['stok']) }}
+                                <span class="fw-bold fs-6 {{ $item->stok < $item->stok_minimum ? 'text-danger' : 'text-dark' }}">
+                                    {{ number_format($item->stok) }}
                                 </span>
                             </td>
-                            <td class="text-end"><span class="text-secondary">{{ number_format($item['stok_minimum']) }}</span></td>
+                            <td class="text-end"><span class="text-secondary">{{ number_format($item->stok_minimum) }}</span></td>
                             <td>
-                                @if ($item['status'] === 'Kurang')
+                                @if ($item->stok < $item->stok_minimum)
                                     <span class="badge badge-subtle-danger d-inline-flex align-items-center gap-1">
                                         <i class="bi bi-exclamation-triangle-fill"></i> Kurang (Restock)
                                     </span>
@@ -88,7 +97,17 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="pe-4"><span class="text-muted small">{{ $item['lokasi'] ?? '-' }}</span></td>
+                            <td>
+                                @php $activeLotCount = $item->barangMasuk->count(); @endphp
+                                @if ($activeLotCount > 0)
+                                    <span class="badge badge-subtle-secondary d-inline-flex align-items-center gap-1" title="{{ $activeLotCount }} lot masuk masih memiliki sisa unit">
+                                        <i class="bi bi-layers-fill text-primary"></i> {{ $activeLotCount }} Lot Aktif
+                                    </span>
+                                @else
+                                    <span class="text-muted small">0 Lot</span>
+                                @endif
+                            </td>
+                            <td class="pe-4"><span class="text-muted small">{{ $item->lokasi ?? '-' }}</span></td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -97,7 +116,7 @@
 
         @if ($barang->hasPages())
             <div class="p-3 border-top bg-light">
-                {{ $barang->appends(request()->query())->links('pagination::bootstrap-5') }}
+                {{ $barang->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>

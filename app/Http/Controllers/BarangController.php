@@ -50,8 +50,17 @@ class BarangController extends Controller
 
     public function show($id)
     {
-        $barang = Barang::with("kategori", "barangMasuk", "barangKeluar")->findOrFail($id);
-        return view("barang.show", compact("barang"));
+        $barang = Barang::with([
+            'kategori',
+            'barangMasuk' => function ($q) {
+                $q->with('user')->orderBy('tanggal', 'desc')->orderBy('id', 'desc');
+            },
+            'barangKeluar' => function ($q) {
+                $q->with(['user', 'details.barangMasuk'])->orderBy('tanggal', 'desc')->orderBy('id', 'desc');
+            }
+        ])->findOrFail($id);
+
+        return view('barang.show', compact('barang'));
     }
 
     public function edit($id)

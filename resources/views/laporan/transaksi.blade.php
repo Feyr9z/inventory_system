@@ -6,7 +6,7 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
     <div>
         <h3 class="fw-bold text-dark mb-1">Laporan Transaksi</h3>
-        <p class="text-muted small mb-0">Analisis riwayat pergerakan stok barang masuk dan barang keluar berdasarkan periode</p>
+        <p class="text-muted small mb-0">Analisis riwayat pergerakan stok barang masuk, barang keluar, dan penelusuran lot FIFO</p>
     </div>
 </div>
 
@@ -96,6 +96,8 @@
                         <th>Nama Barang</th>
                         <th class="text-end">Jumlah Unit</th>
                         <th>Keterangan / Sumber / Tujuan</th>
+                        <th>Petugas</th>
+                        <th class="pe-4">Alokasi & Lot FIFO</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -116,8 +118,34 @@
                                 @endif
                             </td>
                             <td><span class="fw-bold text-dark">{{ $item['nama_barang'] }}</span></td>
-                            <td class="text-end"><span class="fw-bold text-dark">{{ number_format(abs($item['jumlah'])) }}</span></td>
+                            <td class="text-end">
+                                <span class="fw-bold fs-6 {{ $item['tipe'] === 'Masuk' ? 'text-success' : 'text-danger' }}">
+                                    {{ $item['tipe'] === 'Masuk' ? '+' : '-' }}{{ number_format(abs($item['jumlah'])) }}
+                                </span>
+                            </td>
                             <td><span class="text-secondary small">{{ $item['keterangan'] }}</span></td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-person me-1"></i>{{ $item['petugas'] }}
+                                </span>
+                            </td>
+                            <td class="pe-4">
+                                @if ($item['tipe'] === 'Masuk')
+                                    <span class="badge badge-subtle-info small" title="Sisa stok dari lot masuk ini">
+                                        <i class="bi bi-box me-1"></i>Sisa Lot: {{ number_format($item['sisa_jumlah']) }} unit
+                                    </span>
+                                @elseif (!empty($item['fifo_info']))
+                                    <div class="d-flex flex-column gap-1">
+                                        @foreach ($item['fifo_info'] as $fifoItem)
+                                            <span class="badge bg-light text-secondary border text-start font-monospace small" style="font-size: 0.75rem;">
+                                                <i class="bi bi-arrow-return-right text-primary me-1"></i>{{ $fifoItem }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-muted small">-</span>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
