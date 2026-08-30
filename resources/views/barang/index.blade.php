@@ -108,7 +108,7 @@
                             </td>
                             <td class="text-end pe-4">
                                 <div class="d-inline-flex gap-1.5 align-items-center">
-                                    <a href="{{ route('inventory.barang.show', $item->id) }}" class="btn btn-sm btn-outline-info p-1 px-2 d-inline-flex align-items-center gap-1" title="Lihat Detail & Lot FIFO">
+                                    <a href="{{ route('inventory.barang.show', $item->id) }}" class="btn-action-detail" title="Lihat Detail & Lot FIFO">
                                         <i class="bi bi-eye"></i> Detail
                                     </a>
                                     @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))

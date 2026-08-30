@@ -173,32 +173,42 @@
     <main class="py-4">
         <div class="container-fluid px-lg-4">
             @if ($errors->any())
-                <div class="alert alert-danger alert-custom alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 flex-shrink-0"></i>
-                    <div>
-                        <strong class="d-block fw-semibold mb-1">Terjadi Kesalahan!</strong>
-                        <ul class="mb-0 ps-3 small">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                <div class="alert alert-danger alert-custom alert-dismissible fade show d-flex align-items-start gap-3 mb-4" role="alert">
+                    <div class="d-flex align-items-center justify-content-center rounded-circle bg-danger text-white flex-shrink-0" style="width: 28px; height: 28px; font-size: 0.9rem;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="d-block fw-semibold mb-1" style="font-size: 0.925rem;">Terjadi Kesalahan Validasi</strong>
+                        @if ($errors->count() === 1)
+                            <div class="small">{{ $errors->first() }}</div>
+                        @else
+                            <ul class="mb-0 ps-3 small">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
             @if (session('success'))
-                <div class="alert alert-success alert-custom alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
-                    <i class="bi bi-check-circle-fill fs-5 flex-shrink-0"></i>
-                    <div>{{ session('success') }}</div>
+                <div class="alert alert-success alert-custom alert-dismissible fade show d-flex align-items-center gap-3 mb-4" role="alert">
+                    <div class="d-flex align-items-center justify-content-center rounded-circle bg-success text-white flex-shrink-0" style="width: 28px; height: 28px; font-size: 0.9rem;">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <div class="flex-grow-1 fw-semibold small">{{ session('success') }}</div>
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="alert alert-danger alert-custom alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
-                    <i class="bi bi-exclamation-octagon-fill fs-5 flex-shrink-0"></i>
-                    <div>{{ session('error') }}</div>
+                <div class="alert alert-danger alert-custom alert-dismissible fade show d-flex align-items-center gap-3 mb-4" role="alert">
+                    <div class="d-flex align-items-center justify-content-center rounded-circle bg-danger text-white flex-shrink-0" style="width: 28px; height: 28px; font-size: 0.9rem;">
+                        <i class="bi bi-x-lg"></i>
+                    </div>
+                    <div class="flex-grow-1 fw-semibold small">{{ session('error') }}</div>
                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif

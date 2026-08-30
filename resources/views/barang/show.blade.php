@@ -17,15 +17,15 @@
     </div>
     <div class="d-flex align-items-center gap-2">
         @if (in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
-            <a href="{{ route('inventory.barang.edit', $barang->id) }}" class="btn btn-outline-primary fw-semibold d-inline-flex align-items-center gap-1">
-                <i class="bi bi-pencil-square"></i> Edit Data Barang
+            <a href="{{ route('inventory.barang.edit', $barang->id) }}" class="btn-app-secondary">
+                <i class="bi bi-pencil"></i> Edit Barang
             </a>
         @endif
         @if (in_array(auth()->user()->role, ['admin', 'staff']))
-            <a href="{{ route('inventory.transaksi.masuk.create') }}" class="btn btn-outline-success fw-semibold d-inline-flex align-items-center gap-1">
+            <a href="{{ route('inventory.transaksi.masuk.create') }}" class="btn-app-secondary">
                 <i class="bi bi-arrow-down-left-circle"></i> Input Masuk
             </a>
-            <a href="{{ route('inventory.transaksi.keluar.create') }}" class="btn btn-outline-warning fw-semibold d-inline-flex align-items-center gap-1">
+            <a href="{{ route('inventory.transaksi.keluar.create') }}" class="btn-app-primary">
                 <i class="bi bi-arrow-up-right-circle"></i> Input Keluar
             </a>
         @endif
