@@ -15,6 +15,17 @@ class BarangObserver
 
     public function updated(Barang $barang): void
     {
+        // Hanya catat log jika yang berubah bukan semata kolom stok.
+        // Perubahan stok sudah dicatat oleh observer transaksi (masuk/keluar/opname).
+        $changedFields = array_diff(
+            array_keys($barang->getChanges()),
+            ['stok', 'updated_at']
+        );
+
+        if (empty($changedFields)) {
+            return;
+        }
+
         $this->logActivity("Update barang: {$barang->nama_barang}");
     }
 

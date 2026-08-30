@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\StockOpname;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StockOpnameController extends Controller
 {
@@ -17,25 +18,26 @@ class StockOpnameController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            "barang_id" => "required|exists:barang,id",
+            "barang_id"  => "required|exists:barang,id",
             "stok_fisik" => "required|integer|min:0",
-            "tanggal" => "required|date",
+            "tanggal"    => "required|date",
         ]);
 
-        $barang = Barang::findOrFail($validated["barang_id"]);
+        DB::transaction(function () use ($validated) {
+            $barang  = Barang::findOrFail($validated["barang_id"]);
+            $selisih = $validated["stok_fisik"] - $barang->stok;
 
-        $selisih = $validated["stok_fisik"] - $barang->stok;
+            // Override stok agregat
+            $barang->stok = $validated["stok_fisik"];
+            $barang->save();
 
-        // update stok
-        $barang->stok = $validated["stok_fisik"];
-        $barang->save();
-
-        StockOpname::create([
-            "barang_id" => $validated["barang_id"],
-            "stok_fisik" => $validated["stok_fisik"],
-            "selisih" => $selisih,
-            "tanggal" => $validated["tanggal"],
-        ]);
+            StockOpname::create([
+                "barang_id"  => $validated["barang_id"],
+                "stok_fisik" => $validated["stok_fisik"],
+                "selisih"    => $selisih,
+                "tanggal"    => $validated["tanggal"],
+            ]);
+        });
 
         return redirect()
             ->route("inventory.transaksi.opname.create")
