@@ -27,7 +27,7 @@ class LaporanController extends Controller
         $total_keluar = 0;
 
         if ($tipe_transaksi === 'masuk' || $tipe_transaksi === 'semua') {
-            $queryMasuk = BarangMasuk::with(['barang', 'user'])
+            $queryMasuk = BarangMasuk::with(['barang.kategori', 'user'])
                 ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal]);
 
             if ($search) {
@@ -43,16 +43,25 @@ class LaporanController extends Controller
 
             $masuk = $queryMasuk->get()->map(function ($item) use (&$total_masuk) {
                 $total_masuk += $item->jumlah;
+                $docNumber = 'IN-' . $item->tanggal->format('Ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT);
+
                 return [
                     'id'          => $item->id,
+                    'doc_number'  => $docNumber,
                     'tanggal'     => $item->tanggal->format('Y-m-d'),
+                    'tanggal_fmt' => $item->tanggal->format('d/m/Y'),
+                    'waktu_input' => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
                     'tipe'        => 'Masuk',
                     'nama_barang' => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
+                    'kategori'    => $item->barang?->kategori?->nama_kategori ?? '-',
+                    'lokasi'      => $item->barang?->lokasi ?? 'Gudang Utama',
                     'jumlah'      => $item->jumlah,
                     'sisa_jumlah' => $item->sisa_jumlah,
                     'keterangan'  => $item->sumber,
                     'petugas'     => $item->user?->name ?? '-',
+                    'petugas_role'=> $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : '-',
                     'fifo_info'   => null,
+                    'fifo_details'=> null,
                 ];
             });
 
@@ -60,7 +69,7 @@ class LaporanController extends Controller
         }
 
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
-            $queryKeluar = BarangKeluar::with(['barang', 'user', 'details.barangMasuk'])
+            $queryKeluar = BarangKeluar::with(['barang.kategori', 'user', 'details.barangMasuk'])
                 ->whereBetween('tanggal', [$dari_tanggal, $sampai_tanggal]);
 
             if ($search) {
@@ -76,6 +85,16 @@ class LaporanController extends Controller
 
             $keluar = $queryKeluar->get()->map(function ($item) use (&$total_keluar) {
                 $total_keluar += $item->jumlah;
+                $docNumber = 'OUT-' . $item->tanggal->format('Ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT);
+
+                $fifoDetails = $item->details->map(function ($d) {
+                    return [
+                        'lot_id'         => $d->barang_masuk_id,
+                        'lot_tanggal'    => $d->barangMasuk?->tanggal?->format('d/m/Y') ?? '-',
+                        'lot_sumber'     => $d->barangMasuk?->sumber ?? '-',
+                        'jumlah_diambil' => $d->jumlah_diambil,
+                    ];
+                })->all();
 
                 $fifoBreakdown = $item->details->map(function ($detail) {
                     $lotDate = $detail->barangMasuk?->tanggal?->format('d/m/Y') ?? '-';
@@ -85,14 +104,21 @@ class LaporanController extends Controller
 
                 return [
                     'id'          => $item->id,
+                    'doc_number'  => $docNumber,
                     'tanggal'     => $item->tanggal->format('Y-m-d'),
+                    'tanggal_fmt' => $item->tanggal->format('d/m/Y'),
+                    'waktu_input' => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
                     'tipe'        => 'Keluar',
                     'nama_barang' => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
+                    'kategori'    => $item->barang?->kategori?->nama_kategori ?? '-',
+                    'lokasi'      => $item->barang?->lokasi ?? 'Gudang Utama',
                     'jumlah'      => -$item->jumlah,
                     'sisa_jumlah' => null,
                     'keterangan'  => $item->tujuan,
                     'petugas'     => $item->user?->name ?? '-',
+                    'petugas_role'=> $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : '-',
                     'fifo_info'   => $fifoBreakdown,
+                    'fifo_details'=> $fifoDetails,
                 ];
             });
 

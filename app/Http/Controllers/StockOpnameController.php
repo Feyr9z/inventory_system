@@ -57,7 +57,7 @@ class StockOpnameController extends Controller
 
     public function history(Request $request)
     {
-        $query = StockOpname::with('barang');
+        $query = StockOpname::with('barang.kategori');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
