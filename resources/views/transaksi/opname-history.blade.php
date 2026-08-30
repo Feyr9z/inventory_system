@@ -158,23 +158,40 @@
                 <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                     <div class="modal-body p-4 p-md-5">
                         <div class="receipt-card">
-                            <!-- Header Berita Acara -->
-                            <div class="receipt-header d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 pb-3 border-bottom border-2 border-dark mb-4">
-                                <div>
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <div class="bg-dark text-white rounded p-1 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
-                                            <i class="bi bi-clipboard2-check-fill fs-6"></i>
+                            <!-- Header Berita Acara (Kop Surat Resmi) -->
+                            <div class="receipt-header pb-3 mb-4">
+                                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-2">
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <div class="bg-dark text-white rounded p-1.5 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                <i class="bi bi-clipboard2-check-fill fs-5"></i>
+                                            </div>
+                                            <span class="fw-bold text-dark fs-4 tracking-tight">PT ATHA ANAKHATULISTIWA</span>
                                         </div>
-                                        <span class="fw-bold text-dark fs-5 tracking-tight">PT ATHA ANAKHATULISTIWA</span>
+                                        <div class="text-muted text-uppercase fw-semibold small" style="font-size: 0.75rem; letter-spacing: 0.05em;">Divisi Manajemen Logistik & Audit Inventoris</div>
+                                        <div class="text-muted small" style="font-size: 0.75rem;">Jl. Raya Industri Grafika No. 88 • Telp: (021) 555-0199 • Email: logistic@atha.co.id</div>
                                     </div>
-                                    <small class="text-muted text-uppercase fw-semibold d-block">
+                                    <div class="text-sm-end mt-2 mt-sm-0">
+                                        <span class="receipt-doc-badge d-inline-block mb-1">{{ $docNumber }}</span>
+                                        <div class="small text-muted">Tanggal Audit: <strong>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</strong></div>
+                                        <div class="small text-muted">Record: #{{ $item->id }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Judul Dokumen Bar -->
+                            <div class="p-2.5 px-3 bg-light rounded-3 border mb-4 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-bold text-dark text-uppercase small" style="letter-spacing: 0.05em;">
                                         Berita Acara Rekonsiliasi & Stock Opname Fisik
+                                    </span>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                        Physical Stock Reconciliation & FIFO Lot Synchronization Report
                                     </small>
                                 </div>
-                                <div class="text-sm-end">
-                                    <span class="receipt-doc-badge d-inline-block mb-1">{{ $docNumber }}</span>
-                                    <div class="small text-muted">Tanggal Audit: <strong>{{ \Carbon\Carbon::parse($item->tanggal)->format('d/m/Y') }}</strong></div>
-                                </div>
+                                <span class="badge {{ $item->selisih > 0 ? 'badge-subtle-success' : ($item->selisih < 0 ? 'badge-subtle-danger' : 'badge-subtle-secondary') }}">
+                                    {{ $item->selisih > 0 ? 'Surplus Fisik' : ($item->selisih < 0 ? 'Defisit Fisik' : 'Stok Sesuai') }}
+                                </span>
                             </div>
 
                             <!-- Metadata Audit -->
