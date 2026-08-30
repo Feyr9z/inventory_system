@@ -12,9 +12,9 @@
 
 <!-- Filter Card -->
 <div class="card-elevated p-4 mb-4">
-    <h6 class="fw-bold text-dark mb-3">Filter Periode Transaksi</h6>
+    <h6 class="fw-bold text-dark mb-3">Filter & Pencarian Riwayat Transaksi</h6>
     <form action="{{ route('inventory.laporan.transaksi') }}" method="GET" class="row g-3">
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6">
             <label for="dari_tanggal" class="form-label fw-semibold small text-secondary">Dari Tanggal <span class="text-danger">*</span></label>
             <div class="input-group">
                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar text-muted"></i></span>
@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6">
             <label for="sampai_tanggal" class="form-label fw-semibold small text-secondary">Sampai Tanggal <span class="text-danger">*</span></label>
             <div class="input-group">
                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-check text-muted"></i></span>
@@ -30,7 +30,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-4">
             <label for="tipe_transaksi" class="form-label fw-semibold small text-secondary">Tipe Transaksi</label>
             <select id="tipe_transaksi" name="tipe_transaksi" class="form-select">
                 <option value="semua" {{ $tipe_transaksi === 'semua' ? 'selected' : '' }}>Semua Transaksi</option>
@@ -39,15 +39,33 @@
             </select>
         </div>
 
-        <div class="col-md-3 d-flex align-items-end gap-2">
-            <button type="submit" class="btn btn-primary flex-grow-1 fw-semibold d-flex align-items-center justify-content-center gap-1">
-                <i class="bi bi-search"></i> Tampilkan
-            </button>
+        <div class="col-lg-2 col-md-4">
+            <label for="sort" class="form-label fw-semibold small text-secondary">Urutan Tanggal</label>
+            <select id="sort" name="sort" class="form-select">
+                <option value="tanggal_desc" {{ ($sort ?? 'tanggal_desc') === 'tanggal_desc' ? 'selected' : '' }}>Terbaru di Atas</option>
+                <option value="tanggal_asc" {{ ($sort ?? '') === 'tanggal_asc' ? 'selected' : '' }}>Terlama di Atas</option>
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-4">
+            <label for="search" class="form-label fw-semibold small text-secondary">Kata Kunci</label>
+            <input type="text" id="search" name="search" class="form-control" placeholder="Barang/Tujuan/Petugas..." value="{{ $search ?? '' }}">
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top">
+            @if (request()->hasAny(['search', 'tipe_transaksi', 'sort']))
+                <a href="{{ route('inventory.laporan.transaksi') }}" class="btn btn-app-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            @endif
             @if ($data)
-                <a href="{{ route('inventory.laporan.transaksi.export') }}?dari_tanggal={{ $dari_tanggal }}&sampai_tanggal={{ $sampai_tanggal }}&tipe_transaksi={{ $tipe_transaksi }}" class="btn btn-success fw-semibold d-flex align-items-center gap-1" title="Download CSV">
+                <a href="{{ route('inventory.laporan.transaksi.export') }}?dari_tanggal={{ $dari_tanggal }}&sampai_tanggal={{ $sampai_tanggal }}&tipe_transaksi={{ $tipe_transaksi }}&search={{ urlencode($search ?? '') }}&sort={{ $sort ?? 'tanggal_desc' }}" class="btn btn-success fw-semibold d-inline-flex align-items-center gap-1" title="Download CSV">
                     <i class="bi bi-download"></i> Export CSV
                 </a>
             @endif
+            <button type="submit" class="btn btn-app-primary fw-semibold d-inline-flex align-items-center gap-1">
+                <i class="bi bi-search"></i> Tampilkan Laporan
+            </button>
         </div>
     </form>
 </div>

@@ -12,36 +12,59 @@
 
 <!-- Filter Card -->
 <div class="card-elevated p-4 mb-4">
-    <h6 class="fw-bold text-dark mb-3">Filter Kategori & Status</h6>
+    <h6 class="fw-bold text-dark mb-3">Filter & Pencarian Posisi Stok</h6>
     <form action="{{ route('inventory.laporan.stok') }}" method="GET" class="row g-3">
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
+            <label for="search" class="form-label fw-semibold small text-secondary">Cari Barang / Lokasi</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="search" name="search" class="form-control border-start-0 ps-0" placeholder="Ketik nama / lokasi..." value="{{ $search ?? '' }}">
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
             <label for="kategori_id" class="form-label fw-semibold small text-secondary">Kategori</label>
             <select id="kategori_id" name="kategori_id" class="form-select">
                 <option value="">-- Semua Kategori --</option>
                 @foreach ($kategori as $kat)
-                    <option value="{{ $kat->id }}" {{ $kategori_id == $kat->id ? 'selected' : '' }}>
+                    <option value="{{ $kat->id }}" {{ ($kategori_id ?? '') == $kat->id ? 'selected' : '' }}>
                         {{ $kat->nama_kategori }}
                     </option>
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
             <label for="status" class="form-label fw-semibold small text-secondary">Status Stok</label>
             <select id="status" name="status" class="form-select">
                 <option value="">-- Semua Status --</option>
-                <option value="normal" {{ $status == 'normal' ? 'selected' : '' }}>Normal (Aman)</option>
-                <option value="kurang" {{ $status == 'kurang' ? 'selected' : '' }}>Kurang (Perlu Restock)</option>
+                <option value="normal" {{ ($status ?? '') === 'normal' ? 'selected' : '' }}>Normal (Aman)</option>
+                <option value="kurang" {{ ($status ?? '') === 'kurang' ? 'selected' : '' }}>Kurang (Perlu Restock)</option>
             </select>
         </div>
-        <div class="col-md-4 d-flex align-items-end gap-2">
-            <button type="submit" class="btn btn-primary flex-grow-1 fw-semibold d-flex align-items-center justify-content-center gap-1">
-                <i class="bi bi-filter"></i> Filter
-            </button>
+        <div class="col-lg-3 col-md-6">
+            <label for="sort" class="form-label fw-semibold small text-secondary">Urutan Tampilan</label>
+            <select id="sort" name="sort" class="form-select">
+                <option value="terbaru" {{ ($sort ?? 'terbaru') === 'terbaru' ? 'selected' : '' }}>Terbaru Ditambahkan</option>
+                <option value="terlama" {{ ($sort ?? '') === 'terlama' ? 'selected' : '' }}>Terlama</option>
+                <option value="nama_asc" {{ ($sort ?? '') === 'nama_asc' ? 'selected' : '' }}>Nama (A - Z)</option>
+                <option value="nama_desc" {{ ($sort ?? '') === 'nama_desc' ? 'selected' : '' }}>Nama (Z - A)</option>
+                <option value="stok_desc" {{ ($sort ?? '') === 'stok_desc' ? 'selected' : '' }}>Stok Tertinggi</option>
+                <option value="stok_asc" {{ ($sort ?? '') === 'stok_asc' ? 'selected' : '' }}>Stok Terendah</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top">
+            @if (request()->hasAny(['search', 'kategori_id', 'status', 'sort']))
+                <a href="{{ route('inventory.laporan.stok') }}" class="btn btn-app-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            @endif
             @if ($barang->count() > 0)
-                <a href="{{ route('inventory.laporan.stok.export') }}?kategori_id={{ $kategori_id }}&status={{ $status }}" class="btn btn-success fw-semibold d-flex align-items-center gap-1" title="Download CSV">
+                <a href="{{ route('inventory.laporan.stok.export') }}?kategori_id={{ $kategori_id }}&status={{ $status }}&search={{ urlencode($search ?? '') }}&sort={{ $sort ?? 'terbaru' }}" class="btn btn-success fw-semibold d-inline-flex align-items-center gap-1" title="Download CSV">
                     <i class="bi bi-download"></i> Export CSV
                 </a>
             @endif
+            <button type="submit" class="btn btn-app-primary fw-semibold d-inline-flex align-items-center gap-1">
+                <i class="bi bi-filter"></i> Terapkan Filter
+            </button>
         </div>
     </form>
 </div>

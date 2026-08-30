@@ -26,26 +26,48 @@
 <!-- Search & Filter Card -->
 <div class="card-elevated p-3 mb-4">
     <form action="{{ route('inventory.barang.index') }}" method="GET" class="row g-2 align-items-center">
-        <div class="col-md-6">
+        <div class="col-lg-4 col-md-6">
             <div class="input-group">
                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
                 <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari nama barang atau lokasi..." value="{{ request('search') }}">
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-2 col-md-6">
             <select name="kategori" class="form-select">
-                <option value="">Semua Kategori</option>
-                @foreach (\App\Models\Kategori::all() as $kat)
+                <option value="">-- Semua Kategori --</option>
+                @foreach ($kategoriList as $kat)
                     <option value="{{ $kat->id }}" {{ request('kategori') == $kat->id ? 'selected' : '' }}>
                         {{ $kat->nama_kategori }}
                     </option>
                 @endforeach
             </select>
         </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-outline-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2">
+        <div class="col-lg-2 col-md-4">
+            <select name="status" class="form-select">
+                <option value="">-- Semua Status --</option>
+                <option value="normal" {{ request('status') === 'normal' ? 'selected' : '' }}>Normal (Aman)</option>
+                <option value="kurang" {{ request('status') === 'kurang' ? 'selected' : '' }}>Kurang (Restock)</option>
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <select name="sort" class="form-select">
+                <option value="terbaru" {{ request('sort', 'terbaru') === 'terbaru' ? 'selected' : '' }}>Terbaru Ditambahkan</option>
+                <option value="terlama" {{ request('sort') === 'terlama' ? 'selected' : '' }}>Terlama</option>
+                <option value="nama_asc" {{ request('sort') === 'nama_asc' ? 'selected' : '' }}>Nama (A - Z)</option>
+                <option value="nama_desc" {{ request('sort') === 'nama_desc' ? 'selected' : '' }}>Nama (Z - A)</option>
+                <option value="stok_desc" {{ request('sort') === 'stok_desc' ? 'selected' : '' }}>Stok Tertinggi</option>
+                <option value="stok_asc" {{ request('sort') === 'stok_asc' ? 'selected' : '' }}>Stok Terendah</option>
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-app-primary flex-grow-1 fw-semibold d-flex align-items-center justify-content-center gap-1">
                 <i class="bi bi-filter"></i> Filter
             </button>
+            @if (request()->hasAny(['search', 'kategori', 'status', 'sort']))
+                <a href="{{ route('inventory.barang.index') }}" class="btn btn-app-secondary" title="Reset Filter">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            @endif
         </div>
     </form>
 </div>

@@ -9,10 +9,34 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
-        return view('user.index', compact('users'));
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', '%' . $search . '%')
+                  ->orWhere('email', 'ilike', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        $sort = $request->input('sort', 'terbaru');
+        match ($sort) {
+            'nama_asc'  => $query->orderBy('name', 'asc'),
+            'nama_desc' => $query->orderBy('name', 'desc'),
+            'terlama'   => $query->orderBy('id', 'asc'),
+            default     => $query->orderBy('id', 'desc'),
+        };
+
+        $users = $query->paginate(20)->withQueryString();
+        $roles = Role::cases();
+
+        return view('user.index', compact('users', 'roles', 'sort'));
     }
 
     public function create()

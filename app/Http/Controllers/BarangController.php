@@ -11,19 +11,46 @@ class BarangController extends Controller
     public function index(Request $request)
     {
         $query = Barang::with("kategori");
-        
-        // Search by nama_barang
+
+        // Search by nama_barang atau lokasi
         if ($request->filled('search')) {
-            $query->where('nama_barang', 'like', '%' . $request->search . '%');
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_barang', 'ilike', '%' . $search . '%')
+                  ->orWhere('lokasi', 'ilike', '%' . $search . '%');
+            });
         }
-        
+
         // Filter by kategori
         if ($request->filled('kategori')) {
-            $query->where('kategori_id', $request->kategori);
+            $query->where('kategori_id', $request->input('kategori'));
         }
-        
-        $barang = $query->paginate(15);
-        return view("barang.index", compact("barang"));
+
+        // Filter by status stok
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if ($status === 'kurang') {
+                $query->whereRaw('stok < stok_minimum');
+            } elseif ($status === 'normal') {
+                $query->whereRaw('stok >= stok_minimum');
+            }
+        }
+
+        // Sorting (Default: Terbaru di atas / id DESC)
+        $sort = $request->input('sort', 'terbaru');
+        match ($sort) {
+            'terlama'   => $query->orderBy('id', 'asc'),
+            'nama_asc'  => $query->orderBy('nama_barang', 'asc'),
+            'nama_desc' => $query->orderBy('nama_barang', 'desc'),
+            'stok_desc' => $query->orderBy('stok', 'desc'),
+            'stok_asc'  => $query->orderBy('stok', 'asc'),
+            default     => $query->orderBy('id', 'desc'), // 'terbaru'
+        };
+
+        $barang = $query->paginate(15)->withQueryString();
+        $kategoriList = Kategori::orderBy('nama_kategori', 'asc')->get();
+
+        return view("barang.index", compact("barang", "kategoriList", "sort"));
     }
 
     public function create()

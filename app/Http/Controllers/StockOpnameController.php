@@ -57,10 +57,44 @@ class StockOpnameController extends Controller
 
     public function history(Request $request)
     {
-        $opname = StockOpname::with('barang')
-            ->orderBy('tanggal', 'desc')
-            ->paginate(20);
+        $query = StockOpname::with('barang');
 
-        return view('transaksi.opname-history', compact('opname'));
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('barang', function ($b) use ($search) {
+                $b->where('nama_barang', 'ilike', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('dari_tanggal')) {
+            $query->where('tanggal', '>=', $request->input('dari_tanggal'));
+        }
+
+        if ($request->filled('sampai_tanggal')) {
+            $query->where('tanggal', '<=', $request->input('sampai_tanggal'));
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if ($status === 'surplus') {
+                $query->where('selisih', '>', 0);
+            } elseif ($status === 'defisit') {
+                $query->where('selisih', '<', 0);
+            } elseif ($status === 'sesuai') {
+                $query->where('selisih', '=', 0);
+            }
+        }
+
+        $sort = $request->input('sort', 'terbaru');
+        match ($sort) {
+            'terlama'      => $query->orderBy('tanggal', 'asc')->orderBy('id', 'asc'),
+            'selisih_desc' => $query->orderBy('selisih', 'desc'),
+            'selisih_asc'  => $query->orderBy('selisih', 'asc'),
+            default        => $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc'), // 'terbaru'
+        };
+
+        $opname = $query->paginate(20)->withQueryString();
+
+        return view('transaksi.opname-history', compact('opname', 'sort'));
     }
 }

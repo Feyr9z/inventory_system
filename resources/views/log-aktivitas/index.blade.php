@@ -12,9 +12,17 @@
 
 <!-- Filter Card -->
 <div class="card-elevated p-4 mb-4">
-    <h6 class="fw-bold text-dark mb-3">Filter Log Aktivitas</h6>
+    <h6 class="fw-bold text-dark mb-3">Filter & Pencarian Log Aktivitas</h6>
     <form action="{{ route('inventory.log-aktivitas') }}" method="GET" class="row g-3">
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-6">
+            <label for="search" class="form-label fw-semibold small text-secondary">Kata Kunci Aktivitas</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="search" name="search" class="form-control border-start-0 ps-0" placeholder="Ketik aktivitas..." value="{{ $search ?? '' }}">
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
             <label for="dari_tanggal" class="form-label fw-semibold small text-secondary">Dari Tanggal</label>
             <div class="input-group">
                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar text-muted"></i></span>
@@ -22,7 +30,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-4">
             <label for="sampai_tanggal" class="form-label fw-semibold small text-secondary">Sampai Tanggal</label>
             <div class="input-group">
                 <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-check text-muted"></i></span>
@@ -30,21 +38,34 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-4">
             <label for="user_id" class="form-label fw-semibold small text-secondary">Pengguna</label>
             <select id="user_id" name="user_id" class="form-select">
                 <option value="">-- Semua User --</option>
                 @foreach ($users as $user)
-                    <option value="{{ $user->id }}" {{ $user_id == $user->id ? 'selected' : '' }}>
-                        {{ $user->name }} ({{ ucfirst($user->role) }})
+                    <option value="{{ $user->id }}" {{ ($user_id ?? '') == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }} ({{ \App\Enums\Role::tryFrom($user->role)?->label() ?? ucfirst($user->role) }})
                     </option>
                 @endforeach
             </select>
         </div>
 
-        <div class="col-md-3 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-1">
-                <i class="bi bi-search"></i> Filter Log
+        <div class="col-lg-2 col-md-4">
+            <label for="sort" class="form-label fw-semibold small text-secondary">Urutan Waktu</label>
+            <select id="sort" name="sort" class="form-select">
+                <option value="terbaru" {{ ($sort ?? 'terbaru') === 'terbaru' ? 'selected' : '' }}>Terbaru di Atas</option>
+                <option value="terlama" {{ ($sort ?? '') === 'terlama' ? 'selected' : '' }}>Terlama di Atas</option>
+            </select>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top">
+            @if (request()->hasAny(['search', 'user_id', 'dari_tanggal', 'sampai_tanggal', 'sort']))
+                <a href="{{ route('inventory.log-aktivitas') }}" class="btn btn-app-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            @endif
+            <button type="submit" class="btn btn-app-primary fw-semibold d-inline-flex align-items-center gap-1">
+                <i class="bi bi-search"></i> Terapkan Filter
             </button>
         </div>
     </form>

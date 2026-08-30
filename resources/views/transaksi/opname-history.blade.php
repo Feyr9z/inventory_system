@@ -15,6 +15,50 @@
     @endif
 </div>
 
+<!-- Filter Card -->
+<div class="card-elevated p-3 mb-4">
+    <form action="{{ route('inventory.transaksi.opname.history') }}" method="GET" class="row g-2 align-items-center">
+        <div class="col-lg-3 col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari nama barang..." value="{{ request('search') }}">
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-6">
+            <input type="date" name="dari_tanggal" class="form-control" value="{{ request('dari_tanggal') }}" placeholder="Dari Tanggal" title="Dari Tanggal">
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <input type="date" name="sampai_tanggal" class="form-control" value="{{ request('sampai_tanggal') }}" placeholder="Sampai Tanggal" title="Sampai Tanggal">
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <select name="status" class="form-select">
+                <option value="">-- Semua Status --</option>
+                <option value="surplus" {{ request('status') === 'surplus' ? 'selected' : '' }}>Surplus (+)</option>
+                <option value="defisit" {{ request('status') === 'defisit' ? 'selected' : '' }}>Defisit (-)</option>
+                <option value="sesuai" {{ request('status') === 'sesuai' ? 'selected' : '' }}>Sesuai (0)</option>
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <select name="sort" class="form-select">
+                <option value="terbaru" {{ request('sort', 'terbaru') === 'terbaru' ? 'selected' : '' }}>Terbaru di Atas</option>
+                <option value="terlama" {{ request('sort') === 'terlama' ? 'selected' : '' }}>Terlama di Atas</option>
+                <option value="selisih_desc" {{ request('sort') === 'selisih_desc' ? 'selected' : '' }}>Selisih Terbesar</option>
+                <option value="selisih_asc" {{ request('sort') === 'selisih_asc' ? 'selected' : '' }}>Selisih Terkecil</option>
+            </select>
+        </div>
+        <div class="col-lg-1 col-md-4 d-flex gap-1">
+            <button type="submit" class="btn btn-app-primary w-100" title="Terapkan Filter">
+                <i class="bi bi-filter"></i>
+            </button>
+            @if (request()->hasAny(['search', 'dari_tanggal', 'sampai_tanggal', 'status', 'sort']))
+                <a href="{{ route('inventory.transaksi.opname.history') }}" class="btn btn-app-secondary" title="Reset Filter">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            @endif
+        </div>
+    </form>
+</div>
+
 <div class="card-elevated overflow-hidden mb-4">
     @if ($opname->count() > 0)
         <div class="table-responsive">
