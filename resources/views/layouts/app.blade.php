@@ -102,6 +102,15 @@
                                             <li><hr class="dropdown-divider"></li>
                                         @endif
                                         <li>
+                                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="{{ route('inventory.transaksi.approval.index') }}">
+                                                <span><i class="bi bi-shield-check me-2 text-primary"></i>Pemeriksaan Pengeluaran</span>
+                                                @php $pendingNavCount = \App\Models\BarangKeluar::pending()->count(); @endphp
+                                                @if ($pendingNavCount > 0)
+                                                    <span class="badge bg-danger rounded-pill ms-2">{{ $pendingNavCount }}</span>
+                                                @endif
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="dropdown-item" href="{{ route('inventory.transaksi.opname.create') }}">
                                                 <i class="bi bi-clipboard-check me-2 text-purple"></i>Stock Opname
                                             </a>
@@ -113,6 +122,19 @@
                                         </li>
                                     @endif
                                 </ul>
+                            </li>
+                        @endif
+
+                        {{-- Pemeriksaan Barang Keluar Link Khusus Kepala Gudang --}}
+                        @if ($userRole === 'kepala_gudang')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('inventory.transaksi.approval.*') ? 'active' : '' }} d-inline-flex align-items-center gap-1.5" href="{{ route('inventory.transaksi.approval.index') }}">
+                                    <i class="bi bi-shield-check"></i> Pemeriksaan
+                                    @php $pendingKgCount = \App\Models\BarangKeluar::pending()->count(); @endphp
+                                    @if ($pendingKgCount > 0)
+                                        <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">{{ $pendingKgCount }}</span>
+                                    @endif
+                                </a>
                             </li>
                         @endif
 

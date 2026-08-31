@@ -103,6 +103,13 @@ Route::middleware('auth')->prefix('inventory')->name('inventory.')->group(functi
         Route::middleware('role:admin,staff')->group(function () {
             Route::get('saya', [StaffPersonalTransaksiController::class, 'index'])->name('saya');
         });
+
+        // Pemeriksaan & Approval Barang Keluar — Admin + Kepala Gudang
+        Route::middleware('role:admin,kepala_gudang')->prefix('approval')->name('approval.')->group(function () {
+            Route::get('/',             [ApprovalBarangKeluarController::class, 'index'])->name('index');
+            Route::post('{id}/setujui', [ApprovalBarangKeluarController::class, 'approve'])->name('approve');
+            Route::post('{id}/tolak',   [ApprovalBarangKeluarController::class, 'reject'])->name('reject');
+        });
     });
 
     // ======================
