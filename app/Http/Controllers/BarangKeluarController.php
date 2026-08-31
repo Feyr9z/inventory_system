@@ -29,8 +29,16 @@ class BarangKeluarController extends Controller
             "tujuan"    => "required|string|max:255",
         ]);
 
+        $user = Auth::user();
+
         try {
-            $this->fifoService->processBarangKeluar($validated, Auth::id());
+            if ($user->role === 'staff') {
+                $this->fifoService->submitPengajuan($validated, $user->id);
+                $pesan = "Permohonan pengeluaran barang berhasil dicatat dan telah masuk ke antrean pemeriksaan Kepala Gudang.";
+            } else {
+                $this->fifoService->processBarangKeluar($validated, $user->id);
+                $pesan = "Barang keluar berhasil dicatat dan alokasi FIFO telah diproses.";
+            }
         } catch (InvalidArgumentException $e) {
             return back()
                 ->withErrors(["jumlah" => $e->getMessage()])
@@ -39,6 +47,6 @@ class BarangKeluarController extends Controller
 
         return redirect()
             ->route("inventory.transaksi.keluar.create")
-            ->with("success", "Barang keluar berhasil dicatat dengan alokasi FIFO");
+            ->with("success", $pesan);
     }
 }

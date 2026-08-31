@@ -220,8 +220,8 @@
         }
         .signature-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
             margin-top: 36px;
             padding-top: 10px;
         }
@@ -396,13 +396,19 @@
             <div>
                 <div class="signature-box">
                     <div class="signature-name">{{ $keluar->user?->name ?? 'Staff Gudang' }}</div>
-                    <div class="signature-role">Petugas Pengeluar (Gudang)</div>
+                    <div class="signature-role">Petugas Pembuat Dokumen</div>
+                </div>
+            </div>
+            <div>
+                <div class="signature-box">
+                    <div class="signature-name">{{ $keluar->approver?->name ?? 'Kepala Gudang' }}</div>
+                    <div class="signature-role">Kepala Gudang (Otorisasi)</div>
                 </div>
             </div>
             <div>
                 <div class="signature-box">
                     <div class="signature-name">{{ $keluar->tujuan }}</div>
-                    <div class="signature-role">Penerima Barang / Driver Ekspedisi</div>
+                    <div class="signature-role">Penerima Barang / Driver</div>
                 </div>
             </div>
         </div>

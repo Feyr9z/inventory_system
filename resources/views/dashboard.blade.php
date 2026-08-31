@@ -13,6 +13,20 @@
     </div>
 </div>
 
+@if (($pending_approvals_count ?? 0) > 0 && in_array(auth()->user()->role, ['admin', 'kepala_gudang']))
+    <div class="alert alert-primary alert-custom d-flex align-items-center justify-content-between mb-4 shadow-sm border-0 bg-primary-subtle text-primary-emphasis" role="alert">
+        <div class="d-flex align-items-center gap-2.5">
+            <i class="bi bi-clock-history fs-4 text-primary flex-shrink-0"></i>
+            <div>
+                <strong>Pemeriksaan Barang Keluar:</strong> Terdapat <span class="badge bg-danger rounded-pill px-2 py-1 mx-1">{{ $pending_approvals_count }} permohonan</span> pengeluaran barang yang menunggu persetujuan Anda.
+            </div>
+        </div>
+        <a href="{{ route('inventory.transaksi.approval.index', ['tab' => 'pending']) }}" class="btn btn-sm btn-primary fw-semibold d-inline-flex align-items-center gap-1 shadow-sm">
+            Buka Pemeriksaan <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+@endif
+
 @if ($barang_minimum > 0)
     <div class="alert alert-warning alert-custom alert-dismissible fade show d-flex align-items-center justify-content-between mb-4" role="alert">
         <div class="d-flex align-items-center gap-2">

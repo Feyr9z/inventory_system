@@ -12,6 +12,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LogAktivitasController;
 use App\Http\Controllers\StaffPersonalTransaksiController;
+use App\Http\Controllers\ApprovalBarangKeluarController;
 
 /*
 |--------------------------------------------------------------------------

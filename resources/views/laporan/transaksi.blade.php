@@ -33,9 +33,19 @@
         <div class="col-lg-2 col-md-4">
             <label for="tipe_transaksi" class="form-label fw-semibold small text-secondary">Tipe Transaksi</label>
             <select id="tipe_transaksi" name="tipe_transaksi" class="form-select">
-                <option value="semua" {{ $tipe_transaksi === 'semua' ? 'selected' : '' }}>Semua Transaksi</option>
+                <option value="semua" {{ $tipe_transaksi === 'semua' ? 'selected' : '' }}>Semua Tipe</option>
                 <option value="masuk" {{ $tipe_transaksi === 'masuk' ? 'selected' : '' }}>Barang Masuk</option>
                 <option value="keluar" {{ $tipe_transaksi === 'keluar' ? 'selected' : '' }}>Barang Keluar</option>
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-4">
+            <label for="status" class="form-label fw-semibold small text-secondary">Status Approval</label>
+            <select id="status" name="status" class="form-select">
+                <option value="semua" {{ ($status ?? 'semua') === 'semua' ? 'selected' : '' }}>Semua Status</option>
+                <option value="disetujui" {{ ($status ?? '') === 'disetujui' ? 'selected' : '' }}>Disetujui / Selesai</option>
+                <option value="pending" {{ ($status ?? '') === 'pending' ? 'selected' : '' }}>Menunggu Persetujuan</option>
+                <option value="ditolak" {{ ($status ?? '') === 'ditolak' ? 'selected' : '' }}>Ditolak</option>
             </select>
         </div>
 
@@ -53,13 +63,13 @@
         </div>
 
         <div class="col-12 d-flex justify-content-end gap-2 pt-2 border-top">
-            @if (request()->hasAny(['search', 'tipe_transaksi', 'sort']))
+            @if (request()->hasAny(['search', 'tipe_transaksi', 'status', 'sort']))
                 <a href="{{ route('inventory.laporan.transaksi') }}" class="btn btn-app-secondary">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </a>
             @endif
             @if ($data)
-                <a href="{{ route('inventory.laporan.transaksi.export') }}?dari_tanggal={{ $dari_tanggal }}&sampai_tanggal={{ $sampai_tanggal }}&tipe_transaksi={{ $tipe_transaksi }}&search={{ urlencode($search ?? '') }}&sort={{ $sort ?? 'tanggal_desc' }}" class="btn btn-success fw-semibold d-inline-flex align-items-center gap-1" title="Download CSV">
+                <a href="{{ route('inventory.laporan.transaksi.export') }}?dari_tanggal={{ $dari_tanggal }}&sampai_tanggal={{ $sampai_tanggal }}&tipe_transaksi={{ $tipe_transaksi }}&status={{ $status ?? 'semua' }}&search={{ urlencode($search ?? '') }}&sort={{ $sort ?? 'tanggal_desc' }}" class="btn btn-success fw-semibold d-inline-flex align-items-center gap-1" title="Download CSV">
                     <i class="bi bi-download"></i> Export CSV
                 </a>
             @endif
@@ -110,11 +120,11 @@
                 <thead>
                     <tr>
                         <th class="ps-4">No. Ref & Tanggal</th>
-                        <th>Tipe</th>
+                        <th>Tipe & Status</th>
                         <th>Nama Barang & Kategori</th>
                         <th class="text-end">Kuantitas</th>
                         <th>Keterangan / Alur</th>
-                        <th>Petugas</th>
+                        <th>Petugas & Pemeriksa</th>
                         <th>Status FIFO / Sisa Lot</th>
                         <th class="text-end pe-4">Dokumen</th>
                     </tr>
@@ -132,9 +142,22 @@
                                         <i class="bi bi-arrow-down-left-circle-fill"></i> Masuk
                                     </span>
                                 @else
-                                    <span class="badge badge-subtle-danger d-inline-flex align-items-center gap-1">
-                                        <i class="bi bi-arrow-up-right-circle-fill"></i> Keluar
-                                    </span>
+                                    @if (($item['status'] ?? 'disetujui') === 'disetujui')
+                                        <span class="badge badge-subtle-danger d-inline-flex align-items-center gap-1 mb-0.5">
+                                            <i class="bi bi-arrow-up-right-circle-fill"></i> Keluar
+                                        </span>
+                                        <span class="badge badge-subtle-success d-block small" style="font-size: 0.675rem;"><i class="bi bi-check-circle me-1"></i>Disetujui</span>
+                                    @elseif (($item['status'] ?? '') === 'pending')
+                                        <span class="badge badge-subtle-warning d-inline-flex align-items-center gap-1 mb-0.5">
+                                            <i class="bi bi-hourglass-split"></i> Keluar
+                                        </span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis d-block small" style="font-size: 0.675rem;"><i class="bi bi-clock me-1"></i>Pending</span>
+                                    @else
+                                        <span class="badge badge-subtle-secondary d-inline-flex align-items-center gap-1 mb-0.5">
+                                            <i class="bi bi-x-circle-fill"></i> Keluar
+                                        </span>
+                                        <span class="badge badge-subtle-danger d-block small" style="font-size: 0.675rem;"><i class="bi bi-x-circle me-1"></i>Ditolak</span>
+                                    @endif
                                 @endif
                             </td>
                             <td>
@@ -157,11 +180,24 @@
                                 <span class="badge bg-light text-dark border">
                                     <i class="bi bi-person me-1"></i>{{ $item['petugas'] }}
                                 </span>
+                                @if ($item['tipe'] === 'Keluar' && ($item['status'] ?? 'disetujui') === 'disetujui')
+                                    <small class="text-muted d-block mt-0.5" style="font-size: 0.75rem;">Acc: <strong>{{ $item['approver'] }}</strong></small>
+                                @elseif ($item['tipe'] === 'Keluar' && ($item['status'] ?? '') === 'ditolak')
+                                    <small class="text-danger d-block mt-0.5" style="font-size: 0.75rem;">Ditolak: <strong>{{ $item['approver'] }}</strong></small>
+                                @endif
                             </td>
                             <td>
                                 @if ($item['tipe'] === 'Masuk')
                                     <span class="badge badge-subtle-info small" title="Sisa stok dari lot masuk ini">
                                         <i class="bi bi-box me-1"></i>Sisa Lot: {{ number_format($item['sisa_jumlah']) }} unit
+                                    </span>
+                                @elseif (($item['status'] ?? 'disetujui') === 'pending')
+                                    <span class="badge bg-light text-warning border small" style="font-size: 0.75rem;">
+                                        <i class="bi bi-hourglass-split me-1"></i>Menunggu Approval
+                                    </span>
+                                @elseif (($item['status'] ?? 'disetujui') === 'ditolak')
+                                    <span class="badge bg-light text-danger border small" style="font-size: 0.75rem;">
+                                        <i class="bi bi-x-circle me-1"></i>Batal (Tidak Ada FIFO)
                                     </span>
                                 @elseif (!empty($item['fifo_info']))
                                     <div class="d-flex flex-column gap-1">
@@ -325,18 +361,37 @@
                                 </div>
                             @endif
 
+                            <!-- Alert Status Khusus Transaksi Pending/Ditolak -->
+                            @if ($item['tipe'] === 'Keluar' && ($item['status'] ?? 'disetujui') === 'pending')
+                                <div class="alert alert-warning border-0 bg-warning-subtle text-warning-emphasis d-flex align-items-center gap-2 p-3 mb-3 rounded-3 small">
+                                    <i class="bi bi-clock-history fs-5"></i>
+                                    <div>
+                                        <strong>Status: Menunggu Persetujuan Kepala Gudang</strong>
+                                        <div class="small">Stok gudang belum terpotong dan alokasi lot FIFO akan diproses setelah diverifikasi resmi.</div>
+                                    </div>
+                                </div>
+                            @elseif ($item['tipe'] === 'Keluar' && ($item['status'] ?? 'disetujui') === 'ditolak')
+                                <div class="alert alert-danger border-0 bg-danger-subtle text-danger d-flex align-items-center gap-2 p-3 mb-3 rounded-3 small">
+                                    <i class="bi bi-x-circle-fill fs-5"></i>
+                                    <div>
+                                        <strong>Status: Permohonan Ditolak</strong>
+                                        <div class="small">Alasan: {{ $item['catatan_penolakan'] ?? 'Tidak ada alasan penolakan' }}</div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <!-- Kolom Verifikasi / Tanda Tangan -->
                             <div class="row g-4 pt-4">
                                 <div class="col-6">
                                     <div class="receipt-signature-box">
                                         <div class="fw-bold text-dark">{{ $item['petugas'] }}</div>
-                                        <div class="text-muted small">Petugas Gudang</div>
+                                        <div class="text-muted small">Petugas Pembuat Dokumen</div>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="receipt-signature-box">
-                                        <div class="fw-bold text-dark">{{ $item['tipe'] === 'Masuk' ? 'Pengirim / Ekspedisi' : 'Penerima Barang' }}</div>
-                                        <div class="text-muted small">Tanda Tangan & Nama Terang</div>
+                                        <div class="fw-bold text-dark">{{ $item['tipe'] === 'Masuk' ? 'Pengirim / Ekspedisi' : ($item['approver'] !== '-' ? $item['approver'] : 'Pemeriksa / Penerima') }}</div>
+                                        <div class="text-muted small">{{ $item['tipe'] === 'Masuk' ? 'Tanda Tangan Pengirim' : 'Kepala Gudang / Pemeriksa' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -346,9 +401,15 @@
                             <button type="button" class="btn btn-app-secondary" data-bs-dismiss="modal">
                                 <i class="bi bi-x-lg"></i> Tutup
                             </button>
-                            <a href="{{ route($item['tipe'] === 'Masuk' ? 'inventory.receipt.masuk' : 'inventory.receipt.keluar', $item['id']) }}?autoprint=1" target="_blank" class="btn btn-app-primary">
-                                <i class="bi bi-printer-fill me-1"></i> Cetak Dokumen
-                            </a>
+                            @if ($item['tipe'] === 'Masuk' || ($item['status'] ?? 'disetujui') === 'disetujui')
+                                <a href="{{ route($item['tipe'] === 'Masuk' ? 'inventory.receipt.masuk' : 'inventory.receipt.keluar', $item['id']) }}?autoprint=1" target="_blank" class="btn btn-app-primary">
+                                    <i class="bi bi-printer-fill me-1"></i> Cetak Dokumen Resmi
+                                </a>
+                            @else
+                                <button type="button" class="btn btn-light text-muted border" disabled title="Dokumen belum dapat dicetak">
+                                    <i class="bi bi-lock me-1"></i> Cetak Dokumen Terkunci
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

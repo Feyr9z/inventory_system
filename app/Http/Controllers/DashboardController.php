@@ -34,21 +34,27 @@ class DashboardController extends Controller
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
 
-            $data['barang_keluar_bulan_ini'] = BarangKeluar::whereMonth('tanggal', now()->month)
+            $data['barang_keluar_bulan_ini'] = BarangKeluar::where('status', 'disetujui')
+                ->whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
 
             $data['opname_bulan_ini'] = StockOpname::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->count();
+
+            $data['pending_approvals_count'] = BarangKeluar::pending()->count();
         } elseif ($roleValue === Role::Staff->value) {
             $data['barang_masuk_bulan_ini'] = BarangMasuk::whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
 
-            $data['barang_keluar_bulan_ini'] = BarangKeluar::whereMonth('tanggal', now()->month)
+            $data['barang_keluar_bulan_ini'] = BarangKeluar::where('status', 'disetujui')
+                ->whereMonth('tanggal', now()->month)
                 ->whereYear('tanggal', now()->year)
                 ->sum('jumlah');
+
+            $data['pending_approvals_count'] = 0;
         }
 
         return view('dashboard', $data);

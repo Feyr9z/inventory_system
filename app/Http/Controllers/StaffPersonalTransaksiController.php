@@ -72,7 +72,7 @@ class StaffPersonalTransaksiController extends Controller
 
         // 2. Barang Keluar milik user ini
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
-            $queryKeluar = BarangKeluar::with(['barang.kategori', 'user', 'details.barangMasuk'])
+            $queryKeluar = BarangKeluar::with(['barang.kategori', 'user', 'approver', 'details.barangMasuk'])
                 ->where('user_id', $userId)
                 ->whereDate('tanggal', '>=', $dari_tanggal)
                 ->whereDate('tanggal', '<=', $sampai_tanggal);
@@ -87,7 +87,9 @@ class StaffPersonalTransaksiController extends Controller
             }
 
             $keluar = $queryKeluar->get()->map(function ($item) use (&$total_keluar) {
-                $total_keluar += $item->jumlah;
+                if (($item->status ?? 'disetujui') === 'disetujui') {
+                    $total_keluar += $item->jumlah;
+                }
                 $docNumber = 'OUT-' . $item->tanggal->format('Ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT);
 
                 $fifoDetails = $item->details->map(function ($d) {
@@ -106,23 +108,27 @@ class StaffPersonalTransaksiController extends Controller
                 })->all();
 
                 return [
-                    'id'          => $item->id,
-                    'barang_id'   => $item->barang_id,
-                    'doc_number'  => $docNumber,
-                    'tanggal'     => $item->tanggal->format('Y-m-d'),
-                    'tanggal_fmt' => $item->tanggal->format('d/m/Y'),
-                    'waktu_input' => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
-                    'tipe'        => 'Keluar',
-                    'nama_barang' => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
-                    'kategori'    => $item->barang?->kategori?->nama_kategori ?? '-',
-                    'lokasi'      => $item->barang?->lokasi ?? 'Gudang Utama',
-                    'jumlah'      => -$item->jumlah,
-                    'sisa_jumlah' => null,
-                    'keterangan'  => $item->tujuan,
-                    'petugas'     => $item->user?->name ?? 'Saya',
-                    'petugas_role'=> $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : 'Staff',
-                    'fifo_info'   => $fifoBreakdown,
-                    'fifo_details'=> $fifoDetails,
+                    'id'                => $item->id,
+                    'barang_id'         => $item->barang_id,
+                    'doc_number'        => $docNumber,
+                    'tanggal'           => $item->tanggal->format('Y-m-d'),
+                    'tanggal_fmt'       => $item->tanggal->format('d/m/Y'),
+                    'waktu_input'       => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
+                    'tipe'              => 'Keluar',
+                    'nama_barang'       => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
+                    'kategori'          => $item->barang?->kategori?->nama_kategori ?? '-',
+                    'lokasi'            => $item->barang?->lokasi ?? 'Gudang Utama',
+                    'jumlah'            => -$item->jumlah,
+                    'sisa_jumlah'       => null,
+                    'keterangan'        => $item->tujuan,
+                    'petugas'           => $item->user?->name ?? 'Saya',
+                    'petugas_role'      => $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : 'Staff',
+                    'status'            => $item->status ?? 'disetujui',
+                    'status_label'      => \App\Enums\StatusPengeluaran::tryFrom($item->status ?? 'disetujui')?->label() ?? 'Disetujui',
+                    'approver'          => $item->approver?->name ?? (($item->status ?? 'disetujui') === 'disetujui' ? 'Kepala Gudang' : '-'),
+                    'catatan_penolakan' => $item->catatan_penolakan,
+                    'fifo_info'         => $fifoBreakdown,
+                    'fifo_details'      => $fifoDetails,
                 ];
             });
 

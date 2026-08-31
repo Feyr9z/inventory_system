@@ -19,11 +19,12 @@ class LaporanController extends Controller
         $dari_tanggal   = $request->input('dari_tanggal', now()->startOfMonth()->format('Y-m-d'));
         $sampai_tanggal = $request->input('sampai_tanggal', now()->format('Y-m-d'));
         $tipe_transaksi = $request->input('tipe_transaksi', 'semua');
+        $status         = $request->input('status', 'semua');
         $search         = $request->input('search');
         $sort           = $request->input('sort', 'tanggal_desc');
 
         $data = [];
-        $total_masuk  = 0;
+        $total_masuk = 0;
         $total_keluar = 0;
 
         if ($tipe_transaksi === 'masuk' || $tipe_transaksi === 'semua') {
@@ -48,23 +49,27 @@ class LaporanController extends Controller
                 $docNumber = 'IN-' . $item->tanggal->format('Ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT);
 
                 return [
-                    'id'          => $item->id,
-                    'barang_id'   => $item->barang_id,
-                    'doc_number'  => $docNumber,
-                    'tanggal'     => $item->tanggal->format('Y-m-d'),
-                    'tanggal_fmt' => $item->tanggal->format('d/m/Y'),
-                    'waktu_input' => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
-                    'tipe'        => 'Masuk',
-                    'nama_barang' => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
-                    'kategori'    => $item->barang?->kategori?->nama_kategori ?? '-',
-                    'lokasi'      => $item->barang?->lokasi ?? 'Gudang Utama',
-                    'jumlah'      => $item->jumlah,
-                    'sisa_jumlah' => $item->sisa_jumlah,
-                    'keterangan'  => $item->sumber,
-                    'petugas'     => $item->user?->name ?? '-',
-                    'petugas_role'=> $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : '-',
-                    'fifo_info'   => null,
-                    'fifo_details'=> null,
+                    'id'                => $item->id,
+                    'barang_id'         => $item->barang_id,
+                    'doc_number'        => $docNumber,
+                    'tanggal'           => $item->tanggal->format('Y-m-d'),
+                    'tanggal_fmt'       => $item->tanggal->format('d/m/Y'),
+                    'waktu_input'       => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
+                    'tipe'              => 'Masuk',
+                    'nama_barang'       => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
+                    'kategori'          => $item->barang?->kategori?->nama_kategori ?? '-',
+                    'lokasi'            => $item->barang?->lokasi ?? 'Gudang Utama',
+                    'jumlah'            => $item->jumlah,
+                    'sisa_jumlah'       => $item->sisa_jumlah,
+                    'keterangan'        => $item->sumber,
+                    'petugas'           => $item->user?->name ?? '-',
+                    'petugas_role'      => $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : '-',
+                    'status'            => 'disetujui',
+                    'status_label'      => 'Selesai',
+                    'approver'          => '-',
+                    'catatan_penolakan' => null,
+                    'fifo_info'         => null,
+                    'fifo_details'      => null,
                 ];
             });
 
@@ -72,9 +77,13 @@ class LaporanController extends Controller
         }
 
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
-            $queryKeluar = BarangKeluar::with(['barang.kategori', 'user', 'details.barangMasuk'])
+            $queryKeluar = BarangKeluar::with(['barang.kategori', 'user', 'approver', 'details.barangMasuk'])
                 ->whereDate('tanggal', '>=', $dari_tanggal)
                 ->whereDate('tanggal', '<=', $sampai_tanggal);
+
+            if ($status && in_array($status, ['disetujui', 'pending', 'ditolak'])) {
+                $queryKeluar->where('status', $status);
+            }
 
             $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
@@ -89,7 +98,10 @@ class LaporanController extends Controller
             }
 
             $keluar = $queryKeluar->get()->map(function ($item) use (&$total_keluar) {
-                $total_keluar += $item->jumlah;
+                // Hanya jumlahkan mutasi keluar jika status disetujui
+                if (($item->status ?? 'disetujui') === 'disetujui') {
+                    $total_keluar += $item->jumlah;
+                }
                 $docNumber = 'OUT-' . $item->tanggal->format('Ymd') . '-' . str_pad($item->id, 4, '0', STR_PAD_LEFT);
 
                 $fifoDetails = $item->details->map(function ($d) {
@@ -108,23 +120,27 @@ class LaporanController extends Controller
                 })->all();
 
                 return [
-                    'id'          => $item->id,
-                    'barang_id'   => $item->barang_id,
-                    'doc_number'  => $docNumber,
-                    'tanggal'     => $item->tanggal->format('Y-m-d'),
-                    'tanggal_fmt' => $item->tanggal->format('d/m/Y'),
-                    'waktu_input' => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
-                    'tipe'        => 'Keluar',
-                    'nama_barang' => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
-                    'kategori'    => $item->barang?->kategori?->nama_kategori ?? '-',
-                    'lokasi'      => $item->barang?->lokasi ?? 'Gudang Utama',
-                    'jumlah'      => -$item->jumlah,
-                    'sisa_jumlah' => null,
-                    'keterangan'  => $item->tujuan,
-                    'petugas'     => $item->user?->name ?? '-',
-                    'petugas_role'=> $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : '-',
-                    'fifo_info'   => $fifoBreakdown,
-                    'fifo_details'=> $fifoDetails,
+                    'id'                => $item->id,
+                    'barang_id'         => $item->barang_id,
+                    'doc_number'        => $docNumber,
+                    'tanggal'           => $item->tanggal->format('Y-m-d'),
+                    'tanggal_fmt'       => $item->tanggal->format('d/m/Y'),
+                    'waktu_input'       => $item->created_at ? $item->created_at->format('d/m/Y H:i') : $item->tanggal->format('d/m/Y'),
+                    'tipe'              => 'Keluar',
+                    'nama_barang'       => $item->barang?->nama_barang ?? 'Barang #' . $item->barang_id,
+                    'kategori'          => $item->barang?->kategori?->nama_kategori ?? '-',
+                    'lokasi'            => $item->barang?->lokasi ?? 'Gudang Utama',
+                    'jumlah'            => -$item->jumlah,
+                    'sisa_jumlah'       => null,
+                    'keterangan'        => $item->tujuan,
+                    'petugas'           => $item->user?->name ?? '-',
+                    'petugas_role'      => $item->user ? (\App\Enums\Role::tryFrom($item->user->role)?->label() ?? ucfirst($item->user->role)) : '-',
+                    'status'            => $item->status ?? 'disetujui',
+                    'status_label'      => \App\Enums\StatusPengeluaran::tryFrom($item->status ?? 'disetujui')?->label() ?? 'Disetujui',
+                    'approver'          => $item->approver?->name ?? (($item->status ?? 'disetujui') === 'disetujui' ? 'Kepala Gudang' : '-'),
+                    'catatan_penolakan' => $item->catatan_penolakan,
+                    'fifo_info'         => $fifoBreakdown,
+                    'fifo_details'      => $fifoDetails,
                 ];
             });
 
@@ -149,6 +165,7 @@ class LaporanController extends Controller
             'dari_tanggal',
             'sampai_tanggal',
             'tipe_transaksi',
+            'status',
             'search',
             'sort',
             'total_masuk',
@@ -211,6 +228,7 @@ class LaporanController extends Controller
         $dari_tanggal   = $request->input('dari_tanggal', now()->startOfMonth()->format('Y-m-d'));
         $sampai_tanggal = $request->input('sampai_tanggal', now()->format('Y-m-d'));
         $tipe_transaksi = $request->input('tipe_transaksi', 'semua');
+        $status         = $request->input('status');
         $search         = $request->input('search');
         $sort           = $request->input('sort', 'tanggal_desc');
 
@@ -242,6 +260,8 @@ class LaporanController extends Controller
                     'jumlah'      => $item->jumlah,
                     'keterangan'  => $item->sumber,
                     'petugas'     => $item->user?->name ?? '-',
+                    'status'      => 'Disetujui / Selesai',
+                    'approver'    => '-',
                     'alokasi_fifo'=> "Lot ID: {$item->id} (Sisa: {$item->sisa_jumlah})",
                 ];
             });
@@ -249,9 +269,13 @@ class LaporanController extends Controller
         }
 
         if ($tipe_transaksi === 'keluar' || $tipe_transaksi === 'semua') {
-            $queryKeluar = BarangKeluar::with(['barang', 'user', 'details.barangMasuk'])
+            $queryKeluar = BarangKeluar::with(['barang', 'user', 'approver', 'details.barangMasuk'])
                 ->whereDate('tanggal', '>=', $dari_tanggal)
                 ->whereDate('tanggal', '<=', $sampai_tanggal);
+
+            if ($status && in_array($status, ['disetujui', 'pending', 'ditolak'])) {
+                $queryKeluar->where('status', $status);
+            }
 
             $like = \Illuminate\Support\Facades\DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
             if ($search) {
@@ -270,15 +294,22 @@ class LaporanController extends Controller
                     return "Lot #{$d->barang_masuk_id} ({$d->jumlah_diambil} unit)";
                 })->implode('; ');
 
+                $statusLabel = \App\Enums\StatusPengeluaran::tryFrom($item->status ?? 'disetujui')?->label() ?? 'Disetujui';
+                if ($item->status === 'ditolak' && $item->catatan_penolakan) {
+                    $statusLabel .= " (Alasan: {$item->catatan_penolakan})";
+                }
+
                 return [
                     'id'          => $item->id,
                     'tanggal'     => $item->tanggal->format('Y-m-d'),
                     'tipe'        => 'Keluar',
                     'nama_barang' => $item->barang?->nama_barang ?? '-',
-                    'jumlah'      => $item->jumlah,
+                    'jumlah'      => -$item->jumlah,
                     'keterangan'  => $item->tujuan,
                     'petugas'     => $item->user?->name ?? '-',
-                    'alokasi_fifo'=> $fifoBreakdown ?: 'FIFO',
+                    'status'      => $statusLabel,
+                    'approver'    => $item->approver?->name ?? (($item->status ?? 'disetujui') === 'disetujui' ? 'Kepala Gudang' : '-'),
+                    'alokasi_fifo'=> $fifoBreakdown ?: '-',
                 ];
             });
             $data = array_merge($data, $keluar->toArray());
@@ -300,24 +331,26 @@ class LaporanController extends Controller
         return new StreamedResponse(function () use ($data) {
             $handle = fopen('php://output', 'w');
 
-            fputcsv($handle, ['Tanggal', 'Tipe', 'Nama Barang', 'Jumlah Unit', 'Keterangan / Tujuan / Sumber', 'Petugas Input', 'Alokasi Lot FIFO']);
+            fputcsv($handle, ['Tanggal', 'Tipe', 'Nama Barang', 'Jumlah Unit', 'Keterangan / Tujuan / Sumber', 'Petugas Input', 'Status Transaksi', 'Pemeriksa (Approver)', 'Alokasi Lot FIFO']);
 
-            foreach ($data as $item) {
+            foreach ($data as $row) {
                 fputcsv($handle, [
-                    $item['tanggal'],
-                    $item['tipe'],
-                    $item['nama_barang'],
-                    $item['jumlah'],
-                    $item['keterangan'],
-                    $item['petugas'],
-                    $item['alokasi_fifo'],
+                    $row['tanggal'],
+                    $row['tipe'],
+                    $row['nama_barang'],
+                    $row['jumlah'],
+                    $row['keterangan'],
+                    $row['petugas'],
+                    $row['status'],
+                    $row['approver'],
+                    $row['alokasi_fifo'],
                 ]);
             }
 
             fclose($handle);
         }, 200, [
             'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
 
@@ -403,7 +436,7 @@ class LaporanController extends Controller
      */
     public function printKeluarReceipt($id)
     {
-        $keluar = BarangKeluar::with(['barang.kategori', 'user', 'details.barangMasuk'])->findOrFail($id);
+        $keluar = BarangKeluar::with(['barang.kategori', 'user', 'approver', 'details.barangMasuk'])->findOrFail($id);
 
         $docNumber = 'OUT-' . $keluar->tanggal->format('Ymd') . '-' . str_pad($keluar->id, 4, '0', STR_PAD_LEFT);
 

@@ -127,11 +127,11 @@
                 <thead>
                     <tr>
                         <th class="ps-4">No. Ref & Tanggal</th>
-                        <th>Tipe</th>
+                        <th>Tipe & Status</th>
                         <th>Nama Barang & Kategori</th>
                         <th class="text-end">Kuantitas</th>
-                        <th>Keterangan / Alur</th>
-                        <th>Status FIFO / Sisa Lot</th>
+                        <th>Tujuan / Keterangan</th>
+                        <th>Status Approval & FIFO</th>
                         <th class="text-end pe-4">Dokumen</th>
                     </tr>
                 </thead>
@@ -148,9 +148,22 @@
                                         <i class="bi bi-arrow-down-left-circle-fill"></i> Masuk
                                     </span>
                                 @else
-                                    <span class="badge badge-subtle-danger d-inline-flex align-items-center gap-1">
-                                        <i class="bi bi-arrow-up-right-circle-fill"></i> Keluar
-                                    </span>
+                                    @if (($item['status'] ?? 'disetujui') === 'disetujui')
+                                        <span class="badge badge-subtle-danger d-inline-flex align-items-center gap-1 mb-0.5">
+                                            <i class="bi bi-arrow-up-right-circle-fill"></i> Keluar
+                                        </span>
+                                        <span class="badge badge-subtle-success d-block small" style="font-size: 0.675rem;"><i class="bi bi-check-circle me-1"></i>Disetujui</span>
+                                    @elseif (($item['status'] ?? '') === 'pending')
+                                        <span class="badge badge-subtle-warning d-inline-flex align-items-center gap-1 mb-0.5">
+                                            <i class="bi bi-hourglass-split"></i> Keluar
+                                        </span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis d-block small" style="font-size: 0.675rem;"><i class="bi bi-clock me-1"></i>Pending</span>
+                                    @else
+                                        <span class="badge badge-subtle-secondary d-inline-flex align-items-center gap-1 mb-0.5">
+                                            <i class="bi bi-x-circle-fill"></i> Keluar
+                                        </span>
+                                        <span class="badge badge-subtle-danger d-block small" style="font-size: 0.675rem;"><i class="bi bi-x-circle me-1"></i>Ditolak</span>
+                                    @endif
                                 @endif
                             </td>
                             <td>
@@ -174,6 +187,14 @@
                                     <span class="badge badge-subtle-info small" title="Sisa stok dari lot masuk ini">
                                         <i class="bi bi-box me-1"></i>Sisa Lot: {{ number_format($item['sisa_jumlah']) }} unit
                                     </span>
+                                @elseif (($item['status'] ?? 'disetujui') === 'pending')
+                                    <span class="badge bg-light text-warning border small" style="font-size: 0.75rem;">
+                                        <i class="bi bi-hourglass-split me-1"></i>Menunggu Pemeriksaan
+                                    </span>
+                                @elseif (($item['status'] ?? 'disetujui') === 'ditolak')
+                                    <div class="badge bg-light text-danger border small text-start" style="font-size: 0.75rem;">
+                                        <i class="bi bi-exclamation-circle me-1"></i>Ditolak: {{ \Illuminate\Support\Str::limit($item['catatan_penolakan'] ?? 'Batal', 25) }}
+                                    </div>
                                 @elseif (!empty($item['fifo_info']))
                                     <div class="d-flex flex-column gap-1">
                                         @foreach ($item['fifo_info'] as $fifoItem)
@@ -336,18 +357,37 @@
                                 </div>
                             @endif
 
+                            <!-- Alert Status Khusus Transaksi Pending/Ditolak -->
+                            @if ($item['tipe'] === 'Keluar' && ($item['status'] ?? 'disetujui') === 'pending')
+                                <div class="alert alert-warning border-0 bg-warning-subtle text-warning-emphasis d-flex align-items-center gap-2 p-3 mb-3 rounded-3 small">
+                                    <i class="bi bi-clock-history fs-5"></i>
+                                    <div>
+                                        <strong>Status: Menunggu Persetujuan Kepala Gudang</strong>
+                                        <div class="small">Pengajuan Anda sedang dalam antrean verifikasi. Stok gudang dan alokasi lot FIFO akan diproses setelah disetujui.</div>
+                                    </div>
+                                </div>
+                            @elseif ($item['tipe'] === 'Keluar' && ($item['status'] ?? 'disetujui') === 'ditolak')
+                                <div class="alert alert-danger border-0 bg-danger-subtle text-danger d-flex align-items-center gap-2 p-3 mb-3 rounded-3 small">
+                                    <i class="bi bi-x-circle-fill fs-5"></i>
+                                    <div>
+                                        <strong>Status: Pengajuan Ditolak</strong>
+                                        <div class="small">Alasan: {{ $item['catatan_penolakan'] ?? 'Tidak ada alasan penolakan' }}</div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <!-- Kolom Verifikasi / Tanda Tangan -->
                             <div class="row g-4 pt-4">
                                 <div class="col-6">
                                     <div class="receipt-signature-box">
                                         <div class="fw-bold text-dark">{{ $item['petugas'] }}</div>
-                                        <div class="text-muted small">Petugas Gudang (Staff)</div>
+                                        <div class="text-muted small">Petugas Pembuat Dokumen</div>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="receipt-signature-box">
-                                        <div class="fw-bold text-dark">{{ $item['tipe'] === 'Masuk' ? 'Pengirim / Ekspedisi' : 'Penerima Barang' }}</div>
-                                        <div class="text-muted small">Tanda Tangan & Nama Terang</div>
+                                        <div class="fw-bold text-dark">{{ $item['tipe'] === 'Masuk' ? 'Pengirim / Ekspedisi' : ($item['approver'] !== '-' ? $item['approver'] : 'Kepala Gudang') }}</div>
+                                        <div class="text-muted small">{{ $item['tipe'] === 'Masuk' ? 'Tanda Tangan Pengirim' : 'Pemeriksa / Otorisator' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -357,9 +397,15 @@
                             <button type="button" class="btn btn-app-secondary" data-bs-dismiss="modal">
                                 <i class="bi bi-x-lg"></i> Tutup
                             </button>
-                            <a href="{{ route($item['tipe'] === 'Masuk' ? 'inventory.receipt.masuk' : 'inventory.receipt.keluar', $item['id']) }}?autoprint=1" target="_blank" class="btn btn-app-primary">
-                                <i class="bi bi-printer-fill me-1"></i> Cetak Dokumen
-                            </a>
+                            @if ($item['tipe'] === 'Masuk' || ($item['status'] ?? 'disetujui') === 'disetujui')
+                                <a href="{{ route($item['tipe'] === 'Masuk' ? 'inventory.receipt.masuk' : 'inventory.receipt.keluar', $item['id']) }}?autoprint=1" target="_blank" class="btn btn-app-primary">
+                                    <i class="bi bi-printer-fill me-1"></i> Cetak Dokumen
+                                </a>
+                            @else
+                                <button type="button" class="btn btn-light text-muted border" disabled title="Dokumen belum dapat dicetak">
+                                    <i class="bi bi-lock me-1"></i> Cetak Terkunci
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -13,6 +13,24 @@
         </div>
 
         <div class="card-elevated p-4">
+            @if (auth()->user()->role === 'staff')
+                <div class="alert alert-info border-0 bg-light-subtle border-start border-4 border-info d-flex align-items-center gap-2.5 p-3 mb-4 rounded-3">
+                    <i class="bi bi-info-circle-fill text-info fs-5 flex-shrink-0"></i>
+                    <div class="small text-secondary">
+                        <strong class="text-dark d-block">Alur Pemeriksaan Gudang:</strong>
+                        Permohonan pengeluaran barang akan masuk ke antrean pemeriksaan <strong>Kepala Gudang</strong>. Stok dan lot FIFO akan terpotong setelah pengajuan disetujui.
+                    </div>
+                </div>
+            @else
+                <div class="alert alert-primary border-0 bg-light-subtle border-start border-4 border-primary d-flex align-items-center gap-2.5 p-3 mb-4 rounded-3">
+                    <i class="bi bi-shield-check text-primary fs-5 flex-shrink-0"></i>
+                    <div class="small text-secondary">
+                        <strong class="text-dark d-block">Otorisasi Administrator:</strong>
+                        Pengeluaran barang akan langsung diproses dan mengeksekusi alokasi persediaan menggunakan metode <strong>FIFO</strong>.
+                    </div>
+                </div>
+            @endif
+
             <form action="{{ route('inventory.transaksi.keluar.store') }}" method="POST">
                 @csrf
 

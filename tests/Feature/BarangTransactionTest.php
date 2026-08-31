@@ -63,7 +63,9 @@ class BarangTransactionTest extends TestCase
     }
 
     /**
-     * Test input barang keluar via HTTP endpoint dengan alokasi FIFO.
+     * Test input barang keluar via HTTP endpoint:
+     * - Staff submit -> status pending (stok dan lot belum terpotong)
+     * - Kepala Gudang menyetujui -> alokasi FIFO dieksekusi & stok terpotong
      */
     public function test_barang_keluar_allocates_fifo_via_http_post(): void
     {
@@ -86,7 +88,7 @@ class BarangTransactionTest extends TestCase
         ]);
         $this->barang->update(['stok' => 30]);
 
-        // Kirim request barang keluar 15 unit
+        // 1. Staff kirim request barang keluar 15 unit (masuk antrean pending)
         $response = $this->actingAs($this->staff)->post(route('inventory.transaksi.keluar.store'), [
             'barang_id' => $this->barang->id,
             'jumlah'    => 15,
@@ -97,6 +99,26 @@ class BarangTransactionTest extends TestCase
         $response->assertRedirect(route('inventory.transaksi.keluar.create'));
         $response->assertSessionHas('success');
 
+        // Pastikan status pending dan stok belum terpotong
+        $pengajuan = \App\Models\BarangKeluar::where('tujuan', 'Event Pameran Expo')->first();
+        $this->assertNotNull($pengajuan);
+        $this->assertEquals('pending', $pengajuan->status);
+
+        $lot1->refresh();
+        $lot2->refresh();
+        $this->barang->refresh();
+        $this->assertEquals(10, $lot1->sisa_jumlah);
+        $this->assertEquals(20, $lot2->sisa_jumlah);
+        $this->assertEquals(30, $this->barang->stok);
+
+        // 2. Kepala Gudang menyetujui pengajuan
+        $kepalaGudang = User::factory()->kepalaGudang()->create();
+        $approveResponse = $this->actingAs($kepalaGudang)->post(route('inventory.transaksi.approval.approve', $pengajuan->id));
+
+        $approveResponse->assertRedirect(route('inventory.transaksi.approval.index', ['tab' => 'pending']));
+        $approveResponse->assertSessionHas('success');
+
+        // Verifikasi alokasi FIFO (10 dari lot1, 5 dari lot2)
         $lot1->refresh();
         $lot2->refresh();
         $this->barang->refresh();
