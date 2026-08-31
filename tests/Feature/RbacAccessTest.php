@@ -73,6 +73,7 @@ class RbacAccessTest extends TestCase
         // Denied
         $this->actingAs($this->staff)->get(route('inventory.user.index'))->assertRedirect(route('inventory.dashboard'));
         $this->actingAs($this->staff)->get(route('inventory.kategori.index'))->assertRedirect(route('inventory.dashboard'));
+        $this->actingAs($this->staff)->get(route('inventory.transaksi.approval.index'))->assertRedirect(route('inventory.dashboard'));
         $this->actingAs($this->staff)->get(route('inventory.transaksi.opname.create'))->assertRedirect(route('inventory.dashboard'));
         $this->actingAs($this->staff)->get(route('inventory.laporan.transaksi'))->assertRedirect(route('inventory.dashboard'));
         $this->actingAs($this->staff)->get(route('inventory.log-aktivitas'))->assertRedirect(route('inventory.dashboard'));
@@ -91,6 +92,7 @@ class RbacAccessTest extends TestCase
         $this->actingAs($this->kepalaGudang)->get(route('inventory.barang.create'))->assertStatus(200);
         $this->actingAs($this->kepalaGudang)->get(route('inventory.barang.edit', $this->barang->id))->assertStatus(200);
         $this->actingAs($this->kepalaGudang)->get(route('inventory.kategori.index'))->assertStatus(200);
+        $this->actingAs($this->kepalaGudang)->get(route('inventory.transaksi.approval.index'))->assertStatus(200);
         $this->actingAs($this->kepalaGudang)->get(route('inventory.transaksi.opname.create'))->assertStatus(200);
         $this->actingAs($this->kepalaGudang)->get(route('inventory.transaksi.opname.history'))->assertStatus(200);
         $this->actingAs($this->kepalaGudang)->get(route('inventory.laporan.transaksi'))->assertStatus(200);
@@ -120,6 +122,7 @@ class RbacAccessTest extends TestCase
         $this->actingAs($this->management)->get(route('inventory.barang.create'))->assertRedirect(route('inventory.dashboard'));
         $this->actingAs($this->management)->get(route('inventory.transaksi.masuk.create'))->assertRedirect(route('inventory.dashboard'));
         $this->actingAs($this->management)->get(route('inventory.transaksi.keluar.create'))->assertRedirect(route('inventory.dashboard'));
+        $this->actingAs($this->management)->get(route('inventory.transaksi.approval.index'))->assertRedirect(route('inventory.dashboard'));
         $this->actingAs($this->management)->get(route('inventory.transaksi.opname.create'))->assertRedirect(route('inventory.dashboard'));
     }
 }
