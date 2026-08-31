@@ -17,11 +17,16 @@ class BarangKeluar extends Model
         'tanggal',
         'jumlah',
         'tujuan',
+        'status',
+        'approved_by',
+        'catatan_penolakan',
+        'approved_at',
     ];
 
     protected $casts = [
-        'jumlah'  => 'integer',
-        'tanggal' => 'date',
+        'jumlah'      => 'integer',
+        'tanggal'     => 'date',
+        'approved_at' => 'datetime',
     ];
 
     public function barang()
@@ -34,8 +39,28 @@ class BarangKeluar extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     public function details()
     {
         return $this->hasMany(BarangKeluarDetail::class, 'barang_keluar_id');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeDisetujui($query)
+    {
+        return $query->where('status', 'disetujui');
+    }
+
+    public function scopeDitolak($query)
+    {
+        return $query->where('status', 'ditolak');
     }
 }

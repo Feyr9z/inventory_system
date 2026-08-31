@@ -245,4 +245,159 @@ class FifoServiceTest extends TestCase
         $this->assertEquals(6, $lot1->sisa_jumlah);
         $this->assertEquals(10, $lot2->sisa_jumlah);
     }
+
+    /**
+     * Skenario Approval 1: Pengajuan barang keluar berstatus pending tanpa mengurangi stok atau lot.
+     */
+    public function test_submit_pengajuan_creates_pending_status_without_reducing_stock_or_lots(): void
+    {
+        $lot = BarangMasuk::create([
+            'barang_id'   => $this->barang->id,
+            'user_id'     => $this->user->id,
+            'tanggal'     => '2026-08-01',
+            'jumlah'      => 30,
+            'sisa_jumlah' => 30,
+            'sumber'      => 'Supplier Alpha',
+        ]);
+        $this->barang->update(['stok' => 30]);
+
+        $pengajuan = $this->fifoService->submitPengajuan([
+            'barang_id' => $this->barang->id,
+            'jumlah'    => 10,
+            'tanggal'   => '2026-08-05',
+            'tujuan'    => 'Proyek A',
+        ], $this->user->id);
+
+        $this->assertEquals('pending', $pengajuan->status);
+        $this->assertNull($pengajuan->approved_by);
+        $this->assertNull($pengajuan->approved_at);
+
+        // Pastikan stok dan lot belum terpotong
+        $this->barang->refresh();
+        $lot->refresh();
+        $this->assertEquals(30, $this->barang->stok);
+        $this->assertEquals(30, $lot->sisa_jumlah);
+        $this->assertEquals(0, $pengajuan->details()->count());
+    }
+
+    /**
+     * Skenario Approval 2: Persetujuan Kepala Gudang mengeksekusi FIFO dan mengurangi stok/lot.
+     */
+    public function test_approve_pengajuan_executes_fifo_and_reduces_stock_and_lots(): void
+    {
+        $approver = User::factory()->kepalaGudang()->create();
+
+        $lot1 = BarangMasuk::create([
+            'barang_id'   => $this->barang->id,
+            'user_id'     => $this->user->id,
+            'tanggal'     => '2026-08-01',
+            'jumlah'      => 10,
+            'sisa_jumlah' => 10,
+            'sumber'      => 'Lot 1',
+        ]);
+        $lot2 = BarangMasuk::create([
+            'barang_id'   => $this->barang->id,
+            'user_id'     => $this->user->id,
+            'tanggal'     => '2026-08-05',
+            'jumlah'      => 20,
+            'sisa_jumlah' => 20,
+            'sumber'      => 'Lot 2',
+        ]);
+        $this->barang->update(['stok' => 30]);
+
+        $pengajuan = $this->fifoService->submitPengajuan([
+            'barang_id' => $this->barang->id,
+            'jumlah'    => 15,
+            'tanggal'   => '2026-08-10',
+            'tujuan'    => 'Proyek Billboard',
+        ], $this->user->id);
+
+        $approved = $this->fifoService->approvePengajuan($pengajuan->id, $approver->id);
+
+        $this->assertEquals('disetujui', $approved->status);
+        $this->assertEquals($approver->id, $approved->approved_by);
+        $this->assertNotNull($approved->approved_at);
+
+        // Verifikasi alokasi FIFO (10 dari lot1, 5 dari lot2)
+        $lot1->refresh();
+        $lot2->refresh();
+        $this->barang->refresh();
+
+        $this->assertEquals(0, $lot1->sisa_jumlah);
+        $this->assertEquals(15, $lot2->sisa_jumlah);
+        $this->assertEquals(15, $this->barang->stok);
+        $this->assertEquals(2, $approved->details()->count());
+    }
+
+    /**
+     * Skenario Approval 3: Penolakan Kepala Gudang menandai ditolak tanpa mengubah stok atau lot.
+     */
+    public function test_reject_pengajuan_marks_ditolak_with_reason_without_changing_stock(): void
+    {
+        $approver = User::factory()->kepalaGudang()->create();
+
+        $lot = BarangMasuk::create([
+            'barang_id'   => $this->barang->id,
+            'user_id'     => $this->user->id,
+            'tanggal'     => '2026-08-01',
+            'jumlah'      => 20,
+            'sisa_jumlah' => 20,
+            'sumber'      => 'Lot 1',
+        ]);
+        $this->barang->update(['stok' => 20]);
+
+        $pengajuan = $this->fifoService->submitPengajuan([
+            'barang_id' => $this->barang->id,
+            'jumlah'    => 10,
+            'tanggal'   => '2026-08-10',
+            'tujuan'    => 'Proyek B',
+        ], $this->user->id);
+
+        $rejected = $this->fifoService->rejectPengajuan($pengajuan->id, $approver->id, 'Dokumen proyek belum lengkap');
+
+        $this->assertEquals('ditolak', $rejected->status);
+        $this->assertEquals($approver->id, $rejected->approved_by);
+        $this->assertEquals('Dokumen proyek belum lengkap', $rejected->catatan_penolakan);
+        $this->assertNotNull($rejected->approved_at);
+
+        // Stok dan lot tetap utuh
+        $this->barang->refresh();
+        $lot->refresh();
+        $this->assertEquals(20, $this->barang->stok);
+        $this->assertEquals(20, $lot->sisa_jumlah);
+        $this->assertEquals(0, $rejected->details()->count());
+    }
+
+    /**
+     * Skenario Approval 4: Pencegahan race condition saat approval jika stok mendadak tidak cukup.
+     */
+    public function test_approve_pengajuan_fails_when_stock_insufficient_at_approval_time(): void
+    {
+        $approver = User::factory()->kepalaGudang()->create();
+
+        BarangMasuk::create([
+            'barang_id'   => $this->barang->id,
+            'user_id'     => $this->user->id,
+            'tanggal'     => '2026-08-01',
+            'jumlah'      => 10,
+            'sisa_jumlah' => 10,
+            'sumber'      => 'Lot 1',
+        ]);
+        $this->barang->update(['stok' => 10]);
+
+        $pengajuan = $this->fifoService->submitPengajuan([
+            'barang_id' => $this->barang->id,
+            'jumlah'    => 10,
+            'tanggal'   => '2026-08-05',
+            'tujuan'    => 'Proyek C',
+        ], $this->user->id);
+
+        // Simulasikan transaksi lain menghabiskan stok sebelum pengajuan disetujui
+        $this->barang->update(['stok' => 2]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Stok barang saat ini tidak mencukupi');
+
+        $this->fifoService->approvePengajuan($pengajuan->id, $approver->id);
+    }
 }
